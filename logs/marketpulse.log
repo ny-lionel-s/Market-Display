@@ -1,0 +1,135 @@
+2026-04-27 08:58:05,009 INFO OK asset=BTC price=61024 currency=CHF change24h=-0.3245432793216207 reason=Price fetched successfully
+2026-04-27 08:58:05,009 INFO OK asset=ETH price=1823.22 currency=CHF change24h=-0.3083537963102354 reason=Price fetched successfully
+2026-04-27 08:58:05,013 INFO OK asset=SOL price=67.33 currency=CHF change24h=-0.8294090648371876 reason=Price fetched successfully
+2026-04-27 08:58:05,015 INFO OK asset=ADA price=0.194617 currency=CHF change24h=-1.3752881818238023 reason=Price fetched successfully
+2026-04-27 08:58:05,031 INFO OK notification=email skipped=true
+2026-04-27 08:58:14,041 INFO OK asset=BTC price=61024 currency=CHF change24h=-0.3245432793216207 reason=Price fetched successfully
+2026-04-27 08:58:14,058 INFO OK asset=ETH price=1823.22 currency=CHF change24h=-0.3083537963102354 reason=Price fetched successfully
+2026-04-27 08:58:14,059 INFO OK asset=SOL price=67.33 currency=CHF change24h=-0.8294090648371876 reason=Price fetched successfully
+2026-04-27 08:58:14,063 INFO OK asset=ADA price=0.194617 currency=CHF change24h=-1.3752881818238023 reason=Price fetched successfully
+2026-04-27 08:58:14,088 INFO OK notification=email skipped=true
+2026-04-27 09:20:58,869 INFO OK asset=BTC price=60949 currency=CHF change24h=-0.7678667628136665 reason=Price fetched successfully
+2026-04-27 09:20:58,879 INFO OK asset=ETH price=1819.77 currency=CHF change24h=-0.8097447630372163 reason=Price fetched successfully
+2026-04-27 09:20:58,880 INFO OK asset=SOL price=67.14 currency=CHF change24h=-1.4116610508057368 reason=Price fetched successfully
+2026-04-27 09:20:58,881 INFO OK asset=ADA price=0.194182 currency=CHF change24h=-2.0508534234633666 reason=Price fetched successfully
+2026-04-27 09:20:58,900 INFO OK notification=email skipped=true
+2026-04-27 10:35:42,559 INFO OK asset=BTC price=60847 currency=CHF change24h=-1.12241312353406 reason=Price fetched successfully
+2026-04-27 10:35:42,560 INFO OK asset=ETH price=1812.59 currency=CHF change24h=-1.4075922771142078 reason=Price fetched successfully
+2026-04-27 10:35:42,560 INFO OK asset=SOL price=66.78 currency=CHF change24h=-2.1362059731527947 reason=Price fetched successfully
+2026-04-27 10:35:42,560 INFO OK asset=ADA price=0.193567 currency=CHF change24h=-2.2530363985163255 reason=Price fetched successfully
+2026-04-27 10:35:42,561 INFO OK notification=email skipped=true
+2026-04-27 10:54:11,353 INFO OK asset=BTC price=60957 currency=CHF change24h=-0.7788015211904681 reason=Price fetched successfully
+2026-04-27 10:54:11,353 INFO OK asset=ETH price=1816.22 currency=CHF change24h=-1.0695635422246692 reason=Price fetched successfully
+2026-04-27 10:54:11,353 INFO OK asset=SOL price=66.89 currency=CHF change24h=-1.8600233805419542 reason=Price fetched successfully
+2026-04-27 10:54:11,353 INFO OK asset=ADA price=0.193853 currency=CHF change24h=-2.0350666159332325 reason=Price fetched successfully
+2026-04-27 10:54:11,354 INFO OK notification=email skipped=true
+2026-04-27 11:00:02,497 INFO OK asset=BTC price=60956 currency=CHF change24h=-0.7779557174232586 reason=Price fetched successfully
+2026-04-27 11:00:02,497 INFO OK asset=ETH price=1816.62 currency=CHF change24h=-1.0735410685194064 reason=Price fetched successfully
+2026-04-27 11:00:02,497 INFO OK asset=SOL price=66.95 currency=CHF change24h=-1.796255634688039 reason=Price fetched successfully
+2026-04-27 11:00:02,497 INFO OK asset=ADA price=0.193973 currency=CHF change24h=-2.0288735106411786 reason=Price fetched successfully
+2026-04-27 11:00:02,498 INFO OK notification=email skipped=true
+2026-04-27 11:15:01,926 INFO OK asset=BTC price=61001 currency=CHF change24h=-0.6639536813970002 reason=Price fetched successfully
+2026-04-27 11:15:01,926 INFO OK asset=ETH price=1818.84 currency=CHF change24h=-0.8997315672385006 reason=Price fetched successfully
+2026-04-27 11:15:01,926 INFO OK asset=SOL price=67.04 currency=CHF change24h=-1.5708107108221077 reason=Price fetched successfully
+2026-04-27 11:15:01,926 INFO OK asset=ADA price=0.194358 currency=CHF change24h=-1.789165255667713 reason=Price fetched successfully
+2026-04-27 11:15:01,927 INFO OK notification=email skipped=true
+2026-04-27 11:24:04,883 INFO OK asset=BTC price=60943 currency=CHF change24h=-0.7700752663111708 reason=Price fetched successfully
+2026-04-27 11:24:04,884 INFO OK asset=ETH price=1817.04 currency=CHF change24h=-1.052622569497295 reason=Price fetched successfully
+2026-04-27 11:24:04,884 INFO OK asset=SOL price=66.96 currency=CHF change24h=-1.7167604733132151 reason=Price fetched successfully
+2026-04-27 11:24:04,885 INFO OK notification=email skipped=true
+2026-04-27 11:30:02,085 INFO OK asset=BTC price=60977 currency=CHF change24h=-0.7201241217795125 reason=Price fetched successfully
+2026-04-27 11:30:02,085 INFO OK asset=ETH price=1818.57 currency=CHF change24h=-0.9607334223914932 reason=Price fetched successfully
+2026-04-27 11:30:02,085 INFO OK asset=SOL price=66.85 currency=CHF change24h=-1.8814223087305175 reason=Price fetched successfully
+2026-04-27 11:30:02,086 INFO OK notification=email skipped=true
+2026-04-27 11:39:48,403 INFO OK asset=BTC price=77907 currency=USD change24h=-0.07365368322817518 reason=Price fetched successfully
+2026-04-27 11:39:48,404 INFO OK asset=ETH price=2323.07 currency=USD change24h=-0.39040424894757125 reason=Price fetched successfully
+2026-04-27 11:39:48,404 INFO OK asset=SOL price=85.4 currency=USD change24h=-1.2593736359433227 reason=Price fetched successfully
+2026-04-27 11:39:48,405 INFO OK notification=email skipped=true
+2026-04-27 11:45:02,414 INFO OK asset=BTC price=77942 currency=USD change24h=-0.04048977387294357 reason=Price fetched successfully
+2026-04-27 11:45:02,414 INFO OK asset=ETH price=2323.78 currency=USD change24h=-0.4215927110875841 reason=Price fetched successfully
+2026-04-27 11:45:02,414 INFO OK asset=SOL price=85.44 currency=USD change24h=-1.2490645761846635 reason=Price fetched successfully
+2026-04-27 11:45:02,416 INFO OK notification=email skipped=true
+2026-04-27 11:56:29,626 INFO OK asset=BTC price=77965 currency=USD change24h=-0.05412432651863508 reason=Price fetched successfully
+2026-04-27 11:56:29,626 INFO OK asset=ETH price=2324.1 currency=USD change24h=-0.44923684196403424 reason=Price fetched successfully
+2026-04-27 11:56:29,627 INFO OK asset=SOL price=85.57 currency=USD change24h=-1.1129367655772848 reason=Price fetched successfully
+2026-04-27 11:56:29,628 INFO OK notification=email skipped=true
+2026-04-27 12:00:02,238 INFO OK asset=BTC price=77918 currency=USD change24h=-0.11416001775238273 reason=Price fetched successfully
+2026-04-27 12:00:02,238 INFO OK asset=ETH price=2322.95 currency=USD change24h=-0.4985383666753127 reason=Price fetched successfully
+2026-04-27 12:00:02,238 INFO OK asset=SOL price=85.54 currency=USD change24h=-1.1506457282151807 reason=Price fetched successfully
+2026-04-27 12:00:02,240 INFO OK notification=email skipped=true
+2026-04-27 13:15:02,401 INFO OK asset=BTC price=77761 currency=USD change24h=-0.3679571751002626 reason=Price fetched successfully
+2026-04-27 13:15:02,402 INFO OK asset=ETH price=2318.39 currency=USD change24h=-0.6595614513376865 reason=Price fetched successfully
+2026-04-27 13:15:02,402 INFO OK asset=SOL price=85.13 currency=USD change24h=-1.6360621451213742 reason=Price fetched successfully
+2026-04-27 13:15:02,403 INFO OK notification=email skipped=true
+2026-04-27 13:30:01,584 INFO OK asset=BTC price=77869 currency=USD change24h=-0.3293253477546087 reason=Price fetched successfully
+2026-04-27 13:30:01,584 INFO OK asset=ETH price=2322.04 currency=USD change24h=-0.6236628831548451 reason=Price fetched successfully
+2026-04-27 13:30:01,584 INFO OK asset=SOL price=85.26 currency=USD change24h=-1.5298730439727677 reason=Price fetched successfully
+2026-04-27 13:30:01,585 INFO OK notification=email skipped=true
+2026-04-27 13:45:02,079 INFO OK asset=BTC price=77804 currency=USD change24h=-0.36014023265275524 reason=Price fetched successfully
+2026-04-27 13:45:02,079 INFO OK asset=ETH price=2319.98 currency=USD change24h=-0.678509191923261 reason=Price fetched successfully
+2026-04-27 13:45:02,080 INFO OK asset=SOL price=85.23 currency=USD change24h=-1.489888576912013 reason=Price fetched successfully
+2026-04-27 13:45:02,081 INFO OK notification=email skipped=true
+2026-04-27 14:00:02,035 INFO OK asset=BTC price=77839 currency=USD change24h=-0.34790421225941875 reason=Price fetched successfully
+2026-04-27 14:00:02,036 INFO OK asset=ETH price=2320.41 currency=USD change24h=-0.6783640865495578 reason=Price fetched successfully
+2026-04-27 14:00:02,036 INFO OK asset=SOL price=85.23 currency=USD change24h=-1.5032615799687785 reason=Price fetched successfully
+2026-04-27 14:00:02,037 INFO OK notification=email skipped=true
+2026-04-27 14:15:02,235 INFO OK asset=BTC price=77831 currency=USD change24h=-0.21798889555714657 reason=Price fetched successfully
+2026-04-27 14:15:02,237 INFO OK asset=ETH price=2319.97 currency=USD change24h=-0.5084428939685957 reason=Price fetched successfully
+2026-04-27 14:15:02,237 INFO OK asset=SOL price=85.19 currency=USD change24h=-1.4174439874549678 reason=Price fetched successfully
+2026-04-27 14:15:02,238 INFO OK notification=email skipped=true
+2026-04-27 14:30:02,030 INFO OK asset=BTC price=77728 currency=USD change24h=-0.33192366778008275 reason=Price fetched successfully
+2026-04-27 14:30:02,030 INFO OK asset=ETH price=2315.57 currency=USD change24h=-0.6993663008798132 reason=Price fetched successfully
+2026-04-27 14:30:02,030 INFO OK asset=SOL price=85.08 currency=USD change24h=-1.325445573978123 reason=Price fetched successfully
+2026-04-27 14:30:02,032 INFO OK notification=email skipped=true
+2026-04-27 14:45:11,301 ERROR NotOK asset=BTC price= currency=USD change24h= reason=API call failed: <urlopen error [Errno -3] Temporary failure in name resolution>
+2026-04-27 14:45:11,301 ERROR NotOK asset=ETH price= currency=USD change24h= reason=API call failed: <urlopen error [Errno -3] Temporary failure in name resolution>
+2026-04-27 14:45:11,301 ERROR NotOK asset=SOL price= currency=USD change24h= reason=API call failed: <urlopen error [Errno -3] Temporary failure in name resolution>
+2026-04-27 14:45:11,303 INFO OK notification=email skipped=true
+2026-04-27 15:00:01,636 INFO OK asset=BTC price=77637 currency=USD change24h=-0.2587635026265223 reason=Price fetched successfully
+2026-04-27 15:00:01,636 INFO OK asset=ETH price=2313.19 currency=USD change24h=-0.6626039343580206 reason=Price fetched successfully
+2026-04-27 15:00:01,636 INFO OK asset=SOL price=85.11 currency=USD change24h=-1.1472255920265095 reason=Price fetched successfully
+2026-04-27 15:00:01,638 INFO OK notification=email skipped=true
+2026-04-27 15:15:01,613 INFO OK asset=BTC price=77738 currency=USD change24h=-0.18510699811046422 reason=Price fetched successfully
+2026-04-27 15:15:01,614 INFO OK asset=ETH price=2315.44 currency=USD change24h=-0.6550157796157253 reason=Price fetched successfully
+2026-04-27 15:15:01,614 INFO OK asset=SOL price=85.13 currency=USD change24h=-1.0278220862214285 reason=Price fetched successfully
+2026-04-27 15:15:01,616 INFO OK notification=email skipped=true
+2026-04-27 15:30:00,441 INFO OK asset=BTC price=77697 currency=USD change24h=-0.2326873783755717 reason=Price fetched successfully
+2026-04-27 15:30:00,443 INFO OK asset=ETH price=2314.5 currency=USD change24h=-0.6920678904730022 reason=Price fetched successfully
+2026-04-27 15:30:00,443 INFO OK asset=SOL price=85.18 currency=USD change24h=-1.0175411651405883 reason=Price fetched successfully
+2026-04-27 15:30:00,445 INFO OK notification=email skipped=true
+2026-04-27 15:45:00,373 INFO OK asset=BTC price=77810 currency=USD change24h=-0.19264621970646753 reason=Price fetched successfully
+2026-04-27 15:45:00,373 INFO OK asset=ETH price=2315.36 currency=USD change24h=-0.81669260566897 reason=Price fetched successfully
+2026-04-27 15:45:00,374 INFO OK asset=SOL price=85.24 currency=USD change24h=-1.003377057949246 reason=Price fetched successfully
+2026-04-27 15:45:00,376 INFO OK notification=email skipped=true
+2026-04-27 16:15:01,940 INFO OK asset=BTC price=77878 currency=USD change24h=-0.07344900369152553 reason=Price fetched successfully
+2026-04-27 16:15:01,941 INFO OK asset=ETH price=2313.94 currency=USD change24h=-0.9260781585455544 reason=Price fetched successfully
+2026-04-27 16:15:01,941 INFO OK asset=SOL price=85.11 currency=USD change24h=-1.1908766254100576 reason=Price fetched successfully
+2026-04-27 16:15:01,943 INFO OK notification=email skipped=true
+2026-04-28 08:15:50,523 ERROR NotOK asset=BTC price= currency=USD change24h= reason=API call failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1000)>
+2026-04-28 08:15:50,523 ERROR NotOK asset=ETH price= currency=USD change24h= reason=API call failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1000)>
+2026-04-28 08:15:50,523 ERROR NotOK asset=SOL price= currency=USD change24h= reason=API call failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1000)>
+2026-04-28 08:15:50,524 INFO OK notification=email skipped=true
+2026-04-28 08:30:01,660 INFO OK asset=BTC price=76876 currency=USD change24h=-1.1602645194636538 reason=Price fetched successfully
+2026-04-28 08:30:01,662 INFO OK asset=ETH price=2285.68 currency=USD change24h=-1.7461566146808463 reason=Price fetched successfully
+2026-04-28 08:30:01,662 INFO OK asset=SOL price=84.15 currency=USD change24h=-2.152261813551531 reason=Price fetched successfully
+2026-04-28 08:30:01,664 INFO OK notification=email skipped=true
+2026-04-28 08:45:02,374 INFO OK asset=BTC price=76638 currency=USD change24h=-1.266274526535176 reason=Price fetched successfully
+2026-04-28 08:45:02,374 INFO OK asset=ETH price=2274.78 currency=USD change24h=-1.9102480116170903 reason=Price fetched successfully
+2026-04-28 08:45:02,375 INFO OK asset=SOL price=83.8 currency=USD change24h=-2.102059957180179 reason=Price fetched successfully
+2026-04-28 08:45:02,377 INFO OK notification=email skipped=true
+2026-04-28 09:00:01,818 INFO OK asset=BTC price=76711 currency=USD change24h=-1.3082681272822707 reason=Price fetched successfully
+2026-04-28 09:00:01,818 INFO OK asset=ETH price=2277.78 currency=USD change24h=-1.893154003856541 reason=Price fetched successfully
+2026-04-28 09:00:01,818 INFO OK asset=SOL price=83.96 currency=USD change24h=-2.1166578885488683 reason=Price fetched successfully
+2026-04-28 09:00:01,822 INFO OK notification=email skipped=true
+2026-04-28 09:15:01,809 INFO OK asset=BTC price=76574 currency=USD change24h=-1.3504191298892112 reason=Price fetched successfully
+2026-04-28 09:15:01,809 INFO OK asset=ETH price=2274.57 currency=USD change24h=-1.8767423937360683 reason=Price fetched successfully
+2026-04-28 09:15:01,809 INFO OK asset=SOL price=83.85 currency=USD change24h=-2.0515549895762852 reason=Price fetched successfully
+2026-04-28 09:15:01,811 INFO OK notification=email skipped=true
+2026-04-28 09:30:02,351 INFO OK asset=BTC price=76616 currency=USD change24h=-1.3120274958202365 reason=Price fetched successfully
+2026-04-28 09:30:02,351 INFO OK asset=ETH price=2276.77 currency=USD change24h=-1.7482810616601645 reason=Price fetched successfully
+2026-04-28 09:30:02,351 INFO OK asset=SOL price=83.76 currency=USD change24h=-2.0721580046684815 reason=Price fetched successfully
+2026-04-28 09:30:02,353 INFO OK notification=email skipped=true
+2026-04-28 09:45:01,829 INFO OK asset=BTC price=76827 currency=USD change24h=-1.0794164645973985 reason=Price fetched successfully
+2026-04-28 09:45:01,829 INFO OK asset=ETH price=2282.5 currency=USD change24h=-1.6129317954879725 reason=Price fetched successfully
+2026-04-28 09:45:01,829 INFO OK asset=SOL price=83.98 currency=USD change24h=-1.7049260240343194 reason=Price fetched successfully
+2026-04-28 09:45:01,832 INFO OK notification=email skipped=true
