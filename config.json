@@ -1,0 +1,49 @@
+{
+  "project": {
+    "name": "MarketPulse",
+    "dashboard_title": "MarketPulse HTML Market Display"
+  },
+  "market": {
+    "api_url": "https://api.coingecko.com/api/v3/simple/price",
+    "primary_currency": "usd",
+    "currencies": ["usd", "chf"],
+    "timeout_seconds": 15,
+    "default_notok_drop_percent": -6.0,
+    "assets": [
+      {
+        "id": "bitcoin",
+        "symbol": "BTC",
+        "name": "Bitcoin",
+        "notok_drop_percent": -5.0
+      },
+      {
+        "id": "ethereum",
+        "symbol": "ETH",
+        "name": "Ethereum",
+        "notok_drop_percent": -6.0
+      },
+      {
+        "id": "solana",
+        "symbol": "SOL",
+        "name": "Solana",
+        "notok_drop_percent": -8.0
+      }
+    ]
+  },
+  "paths": {
+    "history_csv": "data/market_history.csv",
+    "log_file": "logs/marketpulse.log",
+    "dashboard_html": "reports/index.html",
+    "dashboard_history_rows": 160
+  },
+  "email": {
+    "enabled": false,
+    "send_when": "notok",
+    "smtp_host": "smtp.gmail.com",
+    "smtp_port": 587,
+    "smtp_user_env": "MARKETPULSE_SMTP_USER",
+    "smtp_password_env": "MARKETPULSE_SMTP_PASSWORD",
+    "recipient_env": "MARKETPULSE_ALERT_TO",
+    "sender_env": "MARKETPULSE_ALERT_FROM"
+  }
+}
