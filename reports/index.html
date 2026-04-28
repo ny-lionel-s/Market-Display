@@ -1,0 +1,551 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MarketPulse HTML Market Display</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg-0: #050912;
+      --bg-1: #0b1426;
+      --panel: rgba(15, 23, 42, 0.72);
+      --panel-strong: rgba(15, 23, 42, 0.92);
+      --line: rgba(148, 163, 184, 0.18);
+      --line-strong: rgba(148, 163, 184, 0.32);
+      --text: #f1f5fb;
+      --muted: #94a3b8;
+      --muted-soft: #cbd5e1;
+      --ok: #22c55e;
+      --notok: #ef4444;
+      --up: #22c55e;
+      --down: #ef4444;
+      --accent: #60a5fa;
+      --accent-2: #a78bfa;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-feature-settings: "ss01", "cv11", "tnum";
+      background:
+        radial-gradient(1200px 600px at 10% -10%, rgba(96, 165, 250, 0.18), transparent 60%),
+        radial-gradient(900px 500px at 90% 0%, rgba(167, 139, 250, 0.16), transparent 60%),
+        radial-gradient(700px 500px at 50% 110%, rgba(20, 241, 149, 0.10), transparent 60%),
+        linear-gradient(180deg, var(--bg-0), var(--bg-1));
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+    main { width: min(1280px, calc(100% - 36px)); margin: 0 auto; padding: 48px 0 64px; }
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 36px;
+      border: 1px solid var(--line);
+      border-radius: 32px;
+      background:
+        linear-gradient(135deg, rgba(96, 165, 250, 0.12), rgba(167, 139, 250, 0.08) 40%, rgba(15, 23, 42, 0.6)),
+        var(--panel-strong);
+      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.45);
+      margin-bottom: 28px;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: -20% -10% auto auto;
+      width: 380px; height: 380px;
+      background: radial-gradient(circle, rgba(96, 165, 250, 0.32), transparent 60%);
+      filter: blur(20px);
+      pointer-events: none;
+    }
+    .hero-row { display: flex; justify-content: space-between; gap: 24px; align-items: end; flex-wrap: wrap; position: relative; z-index: 1; }
+    .brand { display: inline-flex; align-items: center; gap: 10px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line-strong); background: rgba(255, 255, 255, 0.04); color: var(--muted); font-size: 0.78rem; font-weight: 800; letter-spacing: 0.22em; text-transform: uppercase; }
+    .brand-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 14px var(--ok); animation: pulse 1.6s ease-in-out infinite; }
+    .brand.notok .brand-dot { background: var(--notok); box-shadow: 0 0 14px var(--notok); }
+    @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.4); } }
+    h1 { margin: 16px 0 0; font-size: clamp(2.4rem, 5.4vw, 4.6rem); letter-spacing: -0.04em; line-height: 1; font-weight: 900; background: linear-gradient(120deg, #ffffff 0%, #c7d2fe 50%, #a78bfa 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .subtitle { margin: 14px 0 0; color: var(--muted); max-width: 720px; line-height: 1.6; font-size: 1rem; }
+    .hero-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-top: 24px; position: relative; z-index: 1; }
+    .hero-stat { padding: 14px 16px; border: 1px solid var(--line); border-radius: 18px; background: rgba(255,255,255,0.03); }
+    .hero-stat-label { font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); font-weight: 800; }
+    .hero-stat-value { margin-top: 6px; font-size: 1.4rem; font-weight: 900; letter-spacing: -0.02em; }
+    .hero-stat-value.ok { color: var(--ok); }
+    .hero-stat-value.notok { color: var(--notok); }
+
+    .section-title { margin: 28px 0 14px; font-size: 0.78rem; letter-spacing: 0.24em; text-transform: uppercase; color: var(--muted); font-weight: 900; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    a.card { text-decoration: none; color: inherit; display: block; }
+    .card, .chart-panel, .meta-panel {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: var(--panel);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
+    }
+    .card { padding: 22px; position: relative; overflow: hidden; transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease; }
+    .card:hover { transform: translateY(-3px); border-color: rgba(96, 165, 250, 0.6); box-shadow: 0 28px 80px rgba(96, 165, 250, 0.18); }
+    .card::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: linear-gradient(180deg, var(--ok), transparent); }
+    .card.notok::before { background: linear-gradient(180deg, var(--notok), transparent); }
+    .card-top { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+    .symbol { color: var(--accent); font-weight: 900; letter-spacing: 0.16em; font-size: 0.92rem; }
+    .pill { padding: 5px 10px; border-radius: 999px; background: rgba(148, 163, 184, 0.12); font-size: 0.7rem; font-weight: 800; letter-spacing: 0.12em; }
+    .card.ok .pill { color: var(--ok); background: rgba(34, 197, 94, 0.12); }
+    .card.notok .pill { color: var(--notok); background: rgba(239, 68, 68, 0.14); }
+    h2 { margin: 14px 0 4px; font-size: 0.92rem; color: var(--muted); font-weight: 700; letter-spacing: 0.02em; }
+    .price { margin: 0; font-size: 2rem; font-weight: 900; letter-spacing: -0.04em; }
+    .price .currency { font-size: 0.85rem; color: var(--muted); margin-left: 6px; letter-spacing: 0.12em; font-weight: 800; }
+    .change { margin: 10px 0 0; font-weight: 800; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; }
+    .change .arrow { font-size: 0.85rem; }
+    .change .muted-label { color: var(--muted); font-weight: 700; margin-left: 6px; }
+    .change.up { color: var(--up); background: rgba(34, 197, 94, 0.1); }
+    .change.down { color: var(--down); background: rgba(239, 68, 68, 0.12); }
+    .change.neutral { color: var(--muted); background: rgba(148, 163, 184, 0.1); }
+    .reason { min-height: 32px; margin: 14px 0 0; color: var(--muted-soft); font-size: 0.86rem; line-height: 1.5; }
+
+    .chart-panel {
+      margin-top: 18px;
+      padding: 36px 40px 28px;
+      scroll-margin-top: 28px;
+      background: #fafaf7;
+      color: #1a1a1a;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+      font-family: "Inter", ui-serif, Georgia, "Times New Roman", serif;
+    }
+    .chart-header { display: flex; justify-content: space-between; gap: 20px; align-items: baseline; flex-wrap: wrap; margin-bottom: 8px; padding-bottom: 18px; border-bottom: 1px solid rgba(0,0,0,0.08); }
+    .chart-ident { display: flex; align-items: center; gap: 14px; }
+    .chart-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .toolbar-title { margin: 0 0 6px; color: #6b7280; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; }
+    .chart-bigprice { margin: 0; font-size: 2.6rem; font-weight: 800; letter-spacing: -0.04em; line-height: 1; color: #0f172a; font-feature-settings: "tnum"; }
+    .chart-bigprice .currency { font-size: 0.78rem; color: #6b7280; margin-left: 8px; letter-spacing: 0.16em; font-weight: 700; vertical-align: middle; }
+    .chart-change { font-weight: 700; font-size: 0.92rem; padding: 6px 14px; border-radius: 999px; letter-spacing: 0.02em; }
+    .chart-change.up { color: #047857; background: rgba(5, 150, 105, 0.10); }
+    .chart-change.down { color: #b91c1c; background: rgba(185, 28, 28, 0.10); }
+    .chart-change.neutral { color: #6b7280; background: rgba(107, 114, 128, 0.10); }
+    .chart-change .muted-label { color: currentColor; opacity: 0.6; margin-left: 4px; font-weight: 600; }
+    .chart-inline-stats { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin: 18px 0 24px; color: #1f2937; font-size: 0.9rem; font-feature-settings: "tnum"; }
+    .chart-inline-stats em { font-style: normal; color: #6b7280; font-size: 0.66rem; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700; margin-right: 8px; }
+    .chart-inline-stats b { font-weight: 800; }
+    .chart-inline-stats .sep { color: rgba(107, 114, 128, 0.4); }
+    .chart-inline-stats .up { color: #047857; }
+    .chart-inline-stats .down { color: #b91c1c; }
+    .chart-canvas-wrap { position: relative; height: 420px; }
+    .reset-zoom.ghost {
+      position: absolute; top: 4px; right: 4px;
+      padding: 4px 10px;
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      background: transparent;
+      border: 1px solid transparent;
+      color: #6b7280;
+      opacity: 0;
+      transition: opacity 200ms ease;
+    }
+    .chart-canvas-wrap:hover .reset-zoom.ghost { opacity: 1; border-color: rgba(0,0,0,0.12); background: rgba(255,255,255,0.9); color: #1f2937; }
+    button {
+      border: 1px solid var(--line-strong);
+      border-radius: 12px;
+      background: rgba(15, 23, 42, 0.7);
+      color: var(--text);
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.06em;
+      padding: 8px 14px;
+      transition: background 160ms ease, border-color 160ms ease, transform 160ms ease, opacity 160ms ease;
+    }
+    button:hover { background: rgba(96, 165, 250, 0.16); border-color: rgba(96, 165, 250, 0.7); transform: translateY(-1px); }
+    .meta-panel { margin-top: 24px; padding: 20px 24px; color: var(--muted); display: flex; justify-content: space-between; gap: 18px; flex-wrap: wrap; font-size: 0.88rem; }
+    canvas { width: 100% !important; height: 100% !important; }
+    code { color: #bae6fd; font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.85rem; }
+    @media (max-width: 980px) {
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .chart-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 640px) {
+      main { width: min(100% - 20px, 1280px); padding: 24px 0; }
+      .grid { grid-template-columns: 1fr; }
+      .hero { padding: 24px; border-radius: 24px; }
+      .chart-panel { padding: 20px; }
+      .chart-canvas-wrap { height: 280px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <div class="hero-row">
+        <div>
+          <span class="brand "><span class="brand-dot"></span> MarketPulse Live</span>
+          <h1>MarketPulse HTML Market Display</h1>
+          <p class="subtitle">Crypto-Marktueberwachung mit OK/NotOK-Logik. Kurse via CoinGecko, automatisch via cron, mit CSV-Verlauf, Logging und E-Mail-Alerts.</p>
+        </div>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-label">Status</div>
+          <div class="hero-stat-value ok">OK</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-label">Assets</div>
+          <div class="hero-stat-value">3</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-label">NotOK</div>
+          <div class="hero-stat-value ok">0</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-label">Updated</div>
+          <div class="hero-stat-value" style="font-size:0.95rem;">2026-04-28T07:45:01+00:00</div>
+        </div>
+      </div>
+    </section>
+
+    <p class="section-title">Marktuebersicht</p>
+    <section class="grid">
+      
+            <a class="card ok" href="#chart-BTC" data-symbol="BTC" title="Zum BTC-Chart springen">
+              <div class="card-top">
+                <span class="symbol">BTC</span>
+                <span class="pill">OK</span>
+              </div>
+              <h2>Bitcoin</h2>
+              <p class="price">76,827.00 <span class="currency">USD</span></p>
+              <p class="change down"><span class="arrow">&darr;</span> -1.08% <span class="muted-label">24h</span></p>
+              <p class="reason">Price fetched successfully</p>
+            </a>
+            
+
+            <a class="card ok" href="#chart-ETH" data-symbol="ETH" title="Zum ETH-Chart springen">
+              <div class="card-top">
+                <span class="symbol">ETH</span>
+                <span class="pill">OK</span>
+              </div>
+              <h2>Ethereum</h2>
+              <p class="price">2,282.50 <span class="currency">USD</span></p>
+              <p class="change down"><span class="arrow">&darr;</span> -1.61% <span class="muted-label">24h</span></p>
+              <p class="reason">Price fetched successfully</p>
+            </a>
+            
+
+            <a class="card ok" href="#chart-SOL" data-symbol="SOL" title="Zum SOL-Chart springen">
+              <div class="card-top">
+                <span class="symbol">SOL</span>
+                <span class="pill">OK</span>
+              </div>
+              <h2>Solana</h2>
+              <p class="price">83.9800 <span class="currency">USD</span></p>
+              <p class="change down"><span class="arrow">&darr;</span> -1.70% <span class="muted-label">24h</span></p>
+              <p class="reason">Price fetched successfully</p>
+            </a>
+            
+    </section>
+
+    <p class="section-title">Kursverlauf</p>
+    
+            <section class="chart-panel" id="chart-BTC">
+              <header class="chart-header">
+                <div class="chart-ident">
+                  <span class="chart-dot" style="background: #f7931a; box-shadow: 0 0 18px rgba(247, 147, 26, 0.35);"></span>
+                  <div>
+                    <p class="toolbar-title">BTC &middot; Bitcoin</p>
+                    <h3 class="chart-bigprice">76,827.00<span class="currency">USD</span></h3>
+                  </div>
+                </div>
+                <span class="chart-change down">-1.08% <span class="muted-label">24h</span></span>
+              </header>
+              <div class="chart-inline-stats">
+                <span><em>Min</em>76,574.00</span>
+                <span class="sep">&middot;</span>
+                <span><em>Avg</em>77,503.14</span>
+                <span class="sep">&middot;</span>
+                <span><em>Max</em>77,965.00</span>
+                <span class="sep">&middot;</span>
+                <span><em>Range</em><b class="down">-1.39%</b></span>
+              </div>
+              <div class="chart-canvas-wrap">
+                <canvas id="canvas-BTC" data-symbol="BTC" aria-label="Bitcoin price history chart"></canvas>
+                <button type="button" class="reset-zoom ghost" data-target="canvas-BTC" aria-label="Zoom zuruecksetzen">Reset</button>
+              </div>
+            </section>
+            
+
+            <section class="chart-panel" id="chart-ETH">
+              <header class="chart-header">
+                <div class="chart-ident">
+                  <span class="chart-dot" style="background: #627eea; box-shadow: 0 0 18px rgba(98, 126, 234, 0.35);"></span>
+                  <div>
+                    <p class="toolbar-title">ETH &middot; Ethereum</p>
+                    <h3 class="chart-bigprice">2,282.50<span class="currency">USD</span></h3>
+                  </div>
+                </div>
+                <span class="chart-change down">-1.61% <span class="muted-label">24h</span></span>
+              </header>
+              <div class="chart-inline-stats">
+                <span><em>Min</em>2,274.57</span>
+                <span class="sep">&middot;</span>
+                <span><em>Avg</em>2,307.37</span>
+                <span class="sep">&middot;</span>
+                <span><em>Max</em>2,324.10</span>
+                <span class="sep">&middot;</span>
+                <span><em>Range</em><b class="down">-1.75%</b></span>
+              </div>
+              <div class="chart-canvas-wrap">
+                <canvas id="canvas-ETH" data-symbol="ETH" aria-label="Ethereum price history chart"></canvas>
+                <button type="button" class="reset-zoom ghost" data-target="canvas-ETH" aria-label="Zoom zuruecksetzen">Reset</button>
+              </div>
+            </section>
+            
+
+            <section class="chart-panel" id="chart-SOL">
+              <header class="chart-header">
+                <div class="chart-ident">
+                  <span class="chart-dot" style="background: #14f195; box-shadow: 0 0 18px rgba(20, 241, 149, 0.35);"></span>
+                  <div>
+                    <p class="toolbar-title">SOL &middot; Solana</p>
+                    <h3 class="chart-bigprice">83.9800<span class="currency">USD</span></h3>
+                  </div>
+                </div>
+                <span class="chart-change down">-1.70% <span class="muted-label">24h</span></span>
+              </header>
+              <div class="chart-inline-stats">
+                <span><em>Min</em>83.7600</span>
+                <span class="sep">&middot;</span>
+                <span><em>Avg</em>84.8733</span>
+                <span class="sep">&middot;</span>
+                <span><em>Max</em>85.5700</span>
+                <span class="sep">&middot;</span>
+                <span><em>Range</em><b class="down">-1.66%</b></span>
+              </div>
+              <div class="chart-canvas-wrap">
+                <canvas id="canvas-SOL" data-symbol="SOL" aria-label="Solana price history chart"></canvas>
+                <button type="button" class="reset-zoom ghost" data-target="canvas-SOL" aria-label="Zoom zuruecksetzen">Reset</button>
+              </div>
+            </section>
+            
+
+    <section class="meta-panel">
+      <span>Generated: <code>2026-04-28T07:45:01+00:00</code></span>
+      <span>NotOK assets: <code>0</code></span>
+      <span>History: <code>data/market_history.csv</code></span>
+      <span>Log: <code>logs/marketpulse.log</code></span>
+    </section>
+  </main>
+
+  <script>
+    const charts = [{"id": "bitcoin", "symbol": "BTC", "name": "Bitcoin", "color": "#f7931a", "glow": "rgba(247, 147, 26, 0.35)", "labels": ["2026-04-27T09:39:48+00:00", "2026-04-27T09:45:02+00:00", "2026-04-27T09:56:29+00:00", "2026-04-27T10:00:01+00:00", "2026-04-27T11:15:01+00:00", "2026-04-27T11:30:01+00:00", "2026-04-27T11:45:01+00:00", "2026-04-27T12:00:01+00:00", "2026-04-27T12:15:02+00:00", "2026-04-27T12:30:01+00:00", "2026-04-27T12:45:01+00:00", "2026-04-27T13:00:01+00:00", "2026-04-27T13:15:01+00:00", "2026-04-27T13:30:00+00:00", "2026-04-27T13:45:00+00:00", "2026-04-27T14:15:01+00:00", "2026-04-28T06:15:50+00:00", "2026-04-28T06:30:01+00:00", "2026-04-28T06:45:01+00:00", "2026-04-28T07:00:01+00:00", "2026-04-28T07:15:01+00:00", "2026-04-28T07:30:01+00:00", "2026-04-28T07:45:01+00:00"], "prices": [77907.0, 77942.0, 77965.0, 77918.0, 77761.0, 77869.0, 77804.0, 77839.0, 77831.0, 77728.0, null, 77637.0, 77738.0, 77697.0, 77810.0, 77878.0, null, 76876.0, 76638.0, 76711.0, 76574.0, 76616.0, 76827.0], "stats": {"min": 76574.0, "max": 77965.0, "avg": 77503.14285714286, "first": 77907.0, "last": 76827.0, "range_change_percent": -1.3862682429050022}}, {"id": "ethereum", "symbol": "ETH", "name": "Ethereum", "color": "#627eea", "glow": "rgba(98, 126, 234, 0.35)", "labels": ["2026-04-27T09:39:48+00:00", "2026-04-27T09:45:02+00:00", "2026-04-27T09:56:29+00:00", "2026-04-27T10:00:01+00:00", "2026-04-27T11:15:01+00:00", "2026-04-27T11:30:01+00:00", "2026-04-27T11:45:01+00:00", "2026-04-27T12:00:01+00:00", "2026-04-27T12:15:02+00:00", "2026-04-27T12:30:01+00:00", "2026-04-27T12:45:01+00:00", "2026-04-27T13:00:01+00:00", "2026-04-27T13:15:01+00:00", "2026-04-27T13:30:00+00:00", "2026-04-27T13:45:00+00:00", "2026-04-27T14:15:01+00:00", "2026-04-28T06:15:50+00:00", "2026-04-28T06:30:01+00:00", "2026-04-28T06:45:01+00:00", "2026-04-28T07:00:01+00:00", "2026-04-28T07:15:01+00:00", "2026-04-28T07:30:01+00:00", "2026-04-28T07:45:01+00:00"], "prices": [2323.07, 2323.78, 2324.1, 2322.95, 2318.39, 2322.04, 2319.98, 2320.41, 2319.97, 2315.57, null, 2313.19, 2315.44, 2314.5, 2315.36, 2313.94, null, 2285.68, 2274.78, 2277.78, 2274.57, 2276.77, 2282.5], "stats": {"min": 2274.57, "max": 2324.1, "avg": 2307.3700000000003, "first": 2323.07, "last": 2282.5, "range_change_percent": -1.746395932968019}}, {"id": "solana", "symbol": "SOL", "name": "Solana", "color": "#14f195", "glow": "rgba(20, 241, 149, 0.35)", "labels": ["2026-04-27T09:39:48+00:00", "2026-04-27T09:45:02+00:00", "2026-04-27T09:56:29+00:00", "2026-04-27T10:00:01+00:00", "2026-04-27T11:15:01+00:00", "2026-04-27T11:30:01+00:00", "2026-04-27T11:45:01+00:00", "2026-04-27T12:00:01+00:00", "2026-04-27T12:15:02+00:00", "2026-04-27T12:30:01+00:00", "2026-04-27T12:45:01+00:00", "2026-04-27T13:00:01+00:00", "2026-04-27T13:15:01+00:00", "2026-04-27T13:30:00+00:00", "2026-04-27T13:45:00+00:00", "2026-04-27T14:15:01+00:00", "2026-04-28T06:15:50+00:00", "2026-04-28T06:30:01+00:00", "2026-04-28T06:45:01+00:00", "2026-04-28T07:00:01+00:00", "2026-04-28T07:15:01+00:00", "2026-04-28T07:30:01+00:00", "2026-04-28T07:45:01+00:00"], "prices": [85.4, 85.44, 85.57, 85.54, 85.13, 85.26, 85.23, 85.23, 85.19, 85.08, null, 85.11, 85.13, 85.18, 85.24, 85.11, null, 84.15, 83.8, 83.96, 83.85, 83.76, 83.98], "stats": {"min": 83.76, "max": 85.57, "avg": 84.87333333333333, "first": 85.4, "last": 83.98, "range_change_percent": -1.6627634660421564}}];
+    const chartInstances = {};
+
+    function shortLabel(iso) {
+      const date = new Date(iso);
+      if (Number.isNaN(date.getTime())) return iso;
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const hour = String(date.getHours()).padStart(2, '0');
+      const minute = String(date.getMinutes()).padStart(2, '0');
+      return `${day}.${month} ${hour}:${minute}`;
+    }
+
+    function formatPrice(value) {
+      if (value === null || value === undefined || Number.isNaN(value)) return 'n/a';
+      return new Intl.NumberFormat('de-CH', { minimumFractionDigits: value >= 100 ? 2 : 4, maximumFractionDigits: value >= 100 ? 2 : 4 }).format(value);
+    }
+
+    const lastPointPlugin = {
+      id: 'lastPoint',
+      afterDatasetsDraw(chart) {
+        const dataset = chart.data.datasets[0];
+        const meta = chart.getDatasetMeta(0);
+        if (!meta.data.length) return;
+        let lastIndex = -1;
+        for (let i = dataset.data.length - 1; i >= 0; i -= 1) {
+          if (dataset.data[i] !== null && dataset.data[i] !== undefined) { lastIndex = i; break; }
+        }
+        if (lastIndex < 0) return;
+        const point = meta.data[lastIndex];
+        if (!point) return;
+        const ctx = chart.ctx;
+        const color = dataset.borderColor;
+        const value = dataset.data[lastIndex];
+
+        const t = (Date.now() % 1800) / 1800;
+        const ringRadius = 4 + t * 10;
+        const ringAlpha = 0.5 * (1 - t);
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, ringRadius, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.globalAlpha = ringAlpha;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = '#0b1426';
+        ctx.fill();
+
+        const label = formatPrice(value);
+        ctx.font = '700 11px Inter, system-ui, sans-serif';
+        const padX = 8;
+        const padY = 5;
+        const textWidth = ctx.measureText(label).width;
+        const boxW = textWidth + padX * 2;
+        const boxH = 22;
+        const right = chart.chartArea.right;
+        let boxX = point.x + 12;
+        if (boxX + boxW > right) boxX = right - boxW;
+        const boxY = point.y - boxH / 2;
+        ctx.beginPath();
+        if (ctx.roundRect) {
+          ctx.roundRect(boxX, boxY, boxW, boxH, 6);
+        } else {
+          ctx.rect(boxX, boxY, boxW, boxH);
+        }
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.fillStyle = '#0b1426';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, boxX + padX, boxY + boxH / 2);
+        ctx.restore();
+      }
+    };
+
+    const baselinePlugin = {
+      id: 'baseline',
+      beforeDatasetsDraw(chart) {
+        const dataset = chart.data.datasets[0];
+        const data = dataset.data.filter((v) => v !== null && v !== undefined);
+        if (!data.length) return;
+        const first = data[0];
+        const yScale = chart.scales.y;
+        const y = yScale.getPixelForValue(first);
+        const { left, right } = chart.chartArea;
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.setLineDash([3, 5]);
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.25)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(left, y);
+        ctx.lineTo(right, y);
+        ctx.stroke();
+        ctx.restore();
+      }
+    };
+
+    charts.forEach((chart) => {
+      const canvas = document.getElementById(`canvas-${chart.symbol}`);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.parentElement.clientHeight || 320);
+      gradient.addColorStop(0, chart.glow);
+      gradient.addColorStop(0.5, chart.glow.replace(/0\.35\)/, '0.08)'));
+      gradient.addColorStop(1, 'rgba(15, 23, 42, 0)');
+
+      const xLabels = chart.labels.map(shortLabel);
+
+      chartInstances[chart.symbol] = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: xLabels,
+          datasets: [{
+            label: chart.symbol,
+            data: chart.prices,
+            borderColor: chart.color,
+            backgroundColor: gradient,
+            borderWidth: 2,
+            borderCapStyle: 'round',
+            borderJoinStyle: 'round',
+            tension: 0.45,
+            spanGaps: true,
+            fill: true,
+            pointRadius: 0,
+            pointHoverRadius: 5,
+            pointHoverBackgroundColor: chart.color,
+            pointHoverBorderColor: '#0b1426',
+            pointHoverBorderWidth: 2,
+          }]
+        },
+        plugins: [baselinePlugin, lastPointPlugin],
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: { padding: { right: 70, top: 16, bottom: 4, left: 4 } },
+          interaction: { mode: 'index', intersect: false },
+          animation: { duration: 700, easing: 'easeOutCubic' },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: 'rgba(11, 20, 38, 0.96)',
+              borderColor: 'rgba(148, 163, 184, 0.18)',
+              borderWidth: 1,
+              titleColor: '#94a3b8',
+              titleFont: { size: 11, weight: '600' },
+              bodyColor: '#f1f5fb',
+              bodyFont: { size: 13, weight: '700' },
+              padding: 12,
+              cornerRadius: 10,
+              displayColors: false,
+              callbacks: {
+                title: (items) => items[0] ? items[0].label : '',
+                label: (item) => `${formatPrice(item.raw)}`
+              }
+            },
+            zoom: {
+              limits: { x: { min: 'original', max: 'original' }, y: { min: 'original', max: 'original' } },
+              pan: { enabled: true, mode: 'x', modifierKey: 'shift' },
+              zoom: {
+                wheel: { enabled: true, speed: 0.08 },
+                pinch: { enabled: true },
+                drag: { enabled: true, backgroundColor: chart.glow, borderColor: chart.color, borderWidth: 1 },
+                mode: 'x'
+              }
+            }
+          },
+          scales: {
+            x: {
+              display: false,
+              grid: { display: false }
+            },
+            y: {
+              position: 'right',
+              ticks: {
+                color: 'rgba(148, 163, 184, 0.6)',
+                font: { size: 10, weight: '600' },
+                maxTicksLimit: 4,
+                padding: 8,
+                callback: (value) => formatPrice(value)
+              },
+              grid: { display: false },
+              border: { display: false }
+            }
+          }
+        }
+      });
+
+      canvas.addEventListener('dblclick', () => chartInstances[chart.symbol]?.resetZoom?.());
+    });
+
+    setInterval(() => {
+      Object.values(chartInstances).forEach((instance) => instance?.render?.());
+    }, 60);
+
+    document.querySelectorAll('button.reset-zoom').forEach((button) => {
+      button.addEventListener('click', () => {
+        const symbol = button.dataset.target.replace('canvas-', '');
+        chartInstances[symbol]?.resetZoom?.();
+      });
+    });
+  </script>
+</body>
+</html>
