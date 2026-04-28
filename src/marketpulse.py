@@ -708,8 +708,7 @@ def generate_dashboard(
 
     <p class="section-title">Kursverlauf</p>
     <div class="trend-toolbar" role="group" aria-label="Trend Zeitraum waehlen">
-      <button type="button" class="trend-btn active" data-trend="1min">1min</button>
-      <button type="button" class="trend-btn" data-trend="5min">5min</button>
+      <button type="button" class="trend-btn active" data-trend="5min">5min</button>
       <button type="button" class="trend-btn" data-trend="1h">1h</button>
       <button type="button" class="trend-btn" data-trend="1d">1d</button>
     </div>
@@ -727,12 +726,11 @@ def generate_dashboard(
     const charts = {charts_json};
     const chartInstances = {{}};
     const trendConfig = {{
-      '1min': {{ windowMs: 60 * 1000 }},
       '5min': {{ windowMs: 5 * 60 * 1000 }},
       '1h': {{ windowMs: 60 * 60 * 1000 }},
       '1d': {{ windowMs: 24 * 60 * 60 * 1000 }},
     }};
-    let activeTrend = '1min';
+    let activeTrend = '5min';
 
     function shortLabel(iso) {{
       const date = new Date(iso);
