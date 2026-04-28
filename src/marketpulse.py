@@ -451,7 +451,6 @@ def render_chart_panels(charts: list[dict[str, Any]], rows: list[dict[str, Any]]
               </div>
               <div class="chart-canvas-wrap">
                 <canvas id="canvas-{symbol}" data-symbol="{symbol}" aria-label="{name} price history chart"></canvas>
-                <button type="button" class="reset-zoom ghost" data-target="canvas-{symbol}" aria-label="Zoom zuruecksetzen">Reset</button>
               </div>
             </section>
             """
@@ -564,6 +563,25 @@ def generate_dashboard(
     .hero-stat-value.notok {{ color: var(--notok); }}
 
     .section-title {{ margin: 28px 0 14px; font-size: 0.78rem; letter-spacing: 0.24em; text-transform: uppercase; color: var(--muted); font-weight: 900; }}
+    .trend-toolbar {{ display: flex; gap: 10px; flex-wrap: wrap; margin: 0 0 16px; }}
+    .trend-btn {{
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.65);
+      color: var(--muted-soft);
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 7px 12px;
+    }}
+    .trend-btn:hover {{ border-color: rgba(96, 165, 250, 0.7); color: var(--text); }}
+    .trend-btn.active {{
+      background: rgba(96, 165, 250, 0.24);
+      border-color: rgba(96, 165, 250, 0.85);
+      color: #ffffff;
+      box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.25) inset;
+    }}
     .grid {{ display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }}
     a.card {{ text-decoration: none; color: inherit; display: block; }}
     .card, .chart-panel, .meta-panel {{
@@ -597,43 +615,32 @@ def generate_dashboard(
       margin-top: 18px;
       padding: 36px 40px 28px;
       scroll-margin-top: 28px;
-      background: #fafaf7;
-      color: #1a1a1a;
-      border: 1px solid rgba(0, 0, 0, 0.06);
+      background:
+        linear-gradient(160deg, rgba(96, 165, 250, 0.06), rgba(15, 23, 42, 0.7) 40%),
+        var(--panel-strong);
+      color: var(--text);
+      border: 1px solid var(--line);
       box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
-      font-family: "Inter", ui-serif, Georgia, "Times New Roman", serif;
+      font-family: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }}
-    .chart-header {{ display: flex; justify-content: space-between; gap: 20px; align-items: baseline; flex-wrap: wrap; margin-bottom: 8px; padding-bottom: 18px; border-bottom: 1px solid rgba(0,0,0,0.08); }}
+    .chart-header {{ display: flex; justify-content: space-between; gap: 20px; align-items: baseline; flex-wrap: wrap; margin-bottom: 8px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }}
     .chart-ident {{ display: flex; align-items: center; gap: 14px; }}
     .chart-dot {{ width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }}
-    .toolbar-title {{ margin: 0 0 6px; color: #6b7280; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; }}
-    .chart-bigprice {{ margin: 0; font-size: 2.6rem; font-weight: 800; letter-spacing: -0.04em; line-height: 1; color: #0f172a; font-feature-settings: "tnum"; }}
-    .chart-bigprice .currency {{ font-size: 0.78rem; color: #6b7280; margin-left: 8px; letter-spacing: 0.16em; font-weight: 700; vertical-align: middle; }}
+    .toolbar-title {{ margin: 0 0 6px; color: var(--muted); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; }}
+    .chart-bigprice {{ margin: 0; font-size: 2.6rem; font-weight: 800; letter-spacing: -0.04em; line-height: 1; color: var(--text); font-feature-settings: "tnum"; }}
+    .chart-bigprice .currency {{ font-size: 0.78rem; color: var(--muted); margin-left: 8px; letter-spacing: 0.16em; font-weight: 700; vertical-align: middle; }}
     .chart-change {{ font-weight: 700; font-size: 0.92rem; padding: 6px 14px; border-radius: 999px; letter-spacing: 0.02em; }}
-    .chart-change.up {{ color: #047857; background: rgba(5, 150, 105, 0.10); }}
-    .chart-change.down {{ color: #b91c1c; background: rgba(185, 28, 28, 0.10); }}
-    .chart-change.neutral {{ color: #6b7280; background: rgba(107, 114, 128, 0.10); }}
+    .chart-change.up {{ color: #34d399; background: rgba(5, 150, 105, 0.20); }}
+    .chart-change.down {{ color: #f87171; background: rgba(185, 28, 28, 0.20); }}
+    .chart-change.neutral {{ color: var(--muted-soft); background: rgba(107, 114, 128, 0.18); }}
     .chart-change .muted-label {{ color: currentColor; opacity: 0.6; margin-left: 4px; font-weight: 600; }}
-    .chart-inline-stats {{ display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin: 18px 0 24px; color: #1f2937; font-size: 0.9rem; font-feature-settings: "tnum"; }}
-    .chart-inline-stats em {{ font-style: normal; color: #6b7280; font-size: 0.66rem; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700; margin-right: 8px; }}
+    .chart-inline-stats {{ display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin: 18px 0 24px; color: var(--muted-soft); font-size: 0.9rem; font-feature-settings: "tnum"; }}
+    .chart-inline-stats em {{ font-style: normal; color: var(--muted); font-size: 0.66rem; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700; margin-right: 8px; }}
     .chart-inline-stats b {{ font-weight: 800; }}
-    .chart-inline-stats .sep {{ color: rgba(107, 114, 128, 0.4); }}
-    .chart-inline-stats .up {{ color: #047857; }}
-    .chart-inline-stats .down {{ color: #b91c1c; }}
+    .chart-inline-stats .sep {{ color: var(--line-strong); }}
+    .chart-inline-stats .up {{ color: #34d399; }}
+    .chart-inline-stats .down {{ color: #f87171; }}
     .chart-canvas-wrap {{ position: relative; height: 420px; }}
-    .reset-zoom.ghost {{
-      position: absolute; top: 4px; right: 4px;
-      padding: 4px 10px;
-      font-size: 0.68rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      background: transparent;
-      border: 1px solid transparent;
-      color: #6b7280;
-      opacity: 0;
-      transition: opacity 200ms ease;
-    }}
-    .chart-canvas-wrap:hover .reset-zoom.ghost {{ opacity: 1; border-color: rgba(0,0,0,0.12); background: rgba(255,255,255,0.9); color: #1f2937; }}
     button {{
       border: 1px solid var(--line-strong);
       border-radius: 12px;
@@ -700,6 +707,12 @@ def generate_dashboard(
     </section>
 
     <p class="section-title">Kursverlauf</p>
+    <div class="trend-toolbar" role="group" aria-label="Trend Zeitraum waehlen">
+      <button type="button" class="trend-btn active" data-trend="1min">1min</button>
+      <button type="button" class="trend-btn" data-trend="5min">5min</button>
+      <button type="button" class="trend-btn" data-trend="1h">1h</button>
+      <button type="button" class="trend-btn" data-trend="1d">1d</button>
+    </div>
     {chart_panels_html}
 
     <section class="meta-panel">
@@ -713,6 +726,13 @@ def generate_dashboard(
   <script>
     const charts = {charts_json};
     const chartInstances = {{}};
+    const trendConfig = {{
+      '1min': {{ windowMs: 60 * 1000 }},
+      '5min': {{ windowMs: 5 * 60 * 1000 }},
+      '1h': {{ windowMs: 60 * 60 * 1000 }},
+      '1d': {{ windowMs: 24 * 60 * 60 * 1000 }},
+    }};
+    let activeTrend = '1min';
 
     function shortLabel(iso) {{
       const date = new Date(iso);
@@ -729,129 +749,87 @@ def generate_dashboard(
       return new Intl.NumberFormat('de-CH', {{ minimumFractionDigits: value >= 100 ? 2 : 4, maximumFractionDigits: value >= 100 ? 2 : 4 }}).format(value);
     }}
 
-    const lastPointPlugin = {{
-      id: 'lastPoint',
-      afterDatasetsDraw(chart) {{
-        const dataset = chart.data.datasets[0];
-        const meta = chart.getDatasetMeta(0);
-        if (!meta.data.length) return;
-        let lastIndex = -1;
-        for (let i = dataset.data.length - 1; i >= 0; i -= 1) {{
-          if (dataset.data[i] !== null && dataset.data[i] !== undefined) {{ lastIndex = i; break; }}
-        }}
-        if (lastIndex < 0) return;
-        const point = meta.data[lastIndex];
-        if (!point) return;
-        const ctx = chart.ctx;
-        const color = dataset.borderColor;
-        const value = dataset.data[lastIndex];
+    function trendSlice(labels, prices, trendKey) {{
+      const config = trendConfig[trendKey] || trendConfig['1h'];
+      const entries = labels
+        .map((label, index) => ({{
+          rawPrice: prices[index],
+          label,
+          timestamp: Date.parse(label),
+        }}))
+        .map((entry) => ({{
+          ...entry,
+          price:
+            entry.rawPrice === null || entry.rawPrice === undefined || entry.rawPrice === ''
+              ? Number.NaN
+              : Number(entry.rawPrice),
+        }}))
+        .filter((entry) => !Number.isNaN(entry.timestamp) && Number.isFinite(entry.price))
+        .sort((a, b) => a.timestamp - b.timestamp);
 
-        const t = (Date.now() % 1800) / 1800;
-        const ringRadius = 4 + t * 10;
-        const ringAlpha = 0.5 * (1 - t);
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(point.x, point.y, ringRadius, 0, Math.PI * 2);
-        ctx.fillStyle = color;
-        ctx.globalAlpha = ringAlpha;
-        ctx.fill();
-        ctx.globalAlpha = 1;
-        ctx.beginPath();
-        ctx.arc(point.x, point.y, 4, 0, Math.PI * 2);
-        ctx.fillStyle = color;
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(point.x, point.y, 2, 0, Math.PI * 2);
-        ctx.fillStyle = '#0b1426';
-        ctx.fill();
-
-        const label = formatPrice(value);
-        ctx.font = '700 11px Inter, system-ui, sans-serif';
-        const padX = 8;
-        const padY = 5;
-        const textWidth = ctx.measureText(label).width;
-        const boxW = textWidth + padX * 2;
-        const boxH = 22;
-        const right = chart.chartArea.right;
-        let boxX = point.x + 12;
-        if (boxX + boxW > right) boxX = right - boxW;
-        const boxY = point.y - boxH / 2;
-        ctx.beginPath();
-        if (ctx.roundRect) {{
-          ctx.roundRect(boxX, boxY, boxW, boxH, 6);
-        }} else {{
-          ctx.rect(boxX, boxY, boxW, boxH);
-        }}
-        ctx.fillStyle = color;
-        ctx.fill();
-        ctx.fillStyle = '#0b1426';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(label, boxX + padX, boxY + boxH / 2);
-        ctx.restore();
+      if (!entries.length) {{
+        return {{ labels: labels.slice(), prices: prices.slice() }};
       }}
-    }};
 
-    const baselinePlugin = {{
-      id: 'baseline',
-      beforeDatasetsDraw(chart) {{
-        const dataset = chart.data.datasets[0];
-        const data = dataset.data.filter((v) => v !== null && v !== undefined);
-        if (!data.length) return;
-        const first = data[0];
-        const yScale = chart.scales.y;
-        const y = yScale.getPixelForValue(first);
-        const {{ left, right }} = chart.chartArea;
-        const ctx = chart.ctx;
-        ctx.save();
-        ctx.setLineDash([3, 5]);
-        ctx.strokeStyle = 'rgba(148, 163, 184, 0.25)';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(left, y);
-        ctx.lineTo(right, y);
-        ctx.stroke();
-        ctx.restore();
-      }}
-    }};
+      const latestTimestamp = entries[entries.length - 1].timestamp;
+      const cutoffTimestamp = latestTimestamp - config.windowMs;
+      const filtered = entries.filter((entry) => entry.timestamp >= cutoffTimestamp);
+      const selected = filtered.length ? filtered : [entries[entries.length - 1]];
+
+      return {{
+        labels: selected.map((entry) => entry.label),
+        prices: selected.map((entry) => entry.price),
+      }};
+    }}
+
+    function setActiveTrendButton(trendKey) {{
+      document.querySelectorAll('button.trend-btn').forEach((button) => {{
+        button.classList.toggle('active', button.dataset.trend === trendKey);
+      }});
+    }}
+
+    function applyTrend(instance, trendKey) {{
+      const sliced = trendSlice(instance.$sourceLabels, instance.$sourcePrices, trendKey);
+      instance.data.labels = sliced.labels.map(shortLabel);
+      instance.data.datasets[0].data = sliced.prices;
+      instance.resetZoom?.();
+      instance.update();
+    }}
+
+    function updateAllChartsForTrend(trendKey) {{
+      activeTrend = trendKey;
+      setActiveTrendButton(trendKey);
+      Object.values(chartInstances).forEach((instance) => applyTrend(instance, trendKey));
+    }}
 
     charts.forEach((chart) => {{
       const canvas = document.getElementById(`canvas-${{chart.symbol}}`);
       if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.parentElement.clientHeight || 320);
-      gradient.addColorStop(0, chart.glow);
-      gradient.addColorStop(0.5, chart.glow.replace(/0\\.35\\)/, '0.08)'));
-      gradient.addColorStop(1, 'rgba(15, 23, 42, 0)');
+      const slicedTrend = trendSlice(chart.labels, chart.prices, activeTrend);
 
-      const xLabels = chart.labels.map(shortLabel);
-
-      chartInstances[chart.symbol] = new Chart(canvas, {{
+      const instance = new Chart(canvas, {{
         type: 'line',
         data: {{
-          labels: xLabels,
+          labels: slicedTrend.labels.map(shortLabel),
           datasets: [{{
             label: chart.symbol,
-            data: chart.prices,
+            data: slicedTrend.prices,
             borderColor: chart.color,
-            backgroundColor: gradient,
-            borderWidth: 2,
-            borderCapStyle: 'round',
-            borderJoinStyle: 'round',
-            tension: 0.45,
+            borderWidth: 2.2,
+            tension: 0,
             spanGaps: true,
-            fill: true,
+            fill: false,
             pointRadius: 0,
-            pointHoverRadius: 5,
+            pointHoverRadius: 4,
             pointHoverBackgroundColor: chart.color,
             pointHoverBorderColor: '#0b1426',
             pointHoverBorderWidth: 2,
           }}]
         }},
-        plugins: [baselinePlugin, lastPointPlugin],
         options: {{
           responsive: true,
           maintainAspectRatio: false,
-          layout: {{ padding: {{ right: 70, top: 16, bottom: 4, left: 4 }} }},
+          layout: {{ padding: {{ right: 16, top: 16, bottom: 4, left: 4 }} }},
           interaction: {{ mode: 'index', intersect: false }},
           animation: {{ duration: 700, easing: 'easeOutCubic' }},
           plugins: {{
@@ -862,17 +840,17 @@ def generate_dashboard(
               borderWidth: 1,
               titleColor: '#94a3b8',
               titleFont: {{ size: 11, weight: '600' }},
-              bodyColor: '#f1f5fb',
-              bodyFont: {{ size: 13, weight: '700' }},
-              padding: 12,
-              cornerRadius: 10,
-              displayColors: false,
-              callbacks: {{
-                title: (items) => items[0] ? items[0].label : '',
-                label: (item) => `${{formatPrice(item.raw)}}`
-              }}
-            }},
-            zoom: {{
+               bodyColor: '#f1f5fb',
+               bodyFont: {{ size: 13, weight: '700' }},
+                padding: 12,
+                cornerRadius: 10,
+                displayColors: false,
+                callbacks: {{
+                  title: (items) => items[0] ? items[0].label : '',
+                  label: (item) => `${{formatPrice(item.raw)}}`
+                }}
+              }},
+              zoom: {{
               limits: {{ x: {{ min: 'original', max: 'original' }}, y: {{ min: 'original', max: 'original' }} }},
               pan: {{ enabled: true, mode: 'x', modifierKey: 'shift' }},
               zoom: {{
@@ -883,13 +861,18 @@ def generate_dashboard(
               }}
             }}
           }},
-          scales: {{
-            x: {{
-              display: false,
-              grid: {{ display: false }}
-            }},
-            y: {{
-              position: 'right',
+           scales: {{
+             x: {{
+               ticks: {{
+                 color: 'rgba(148, 163, 184, 0.65)',
+                 font: {{ size: 10, weight: '600' }},
+                 maxTicksLimit: 8,
+               }},
+               grid: {{ display: false }},
+               border: {{ display: false }}
+             }},
+             y: {{
+               position: 'right',
               ticks: {{
                 color: 'rgba(148, 163, 184, 0.6)',
                 font: {{ size: 10, weight: '600' }},
@@ -904,19 +887,22 @@ def generate_dashboard(
         }}
       }});
 
+      instance.$sourceLabels = chart.labels.slice();
+      instance.$sourcePrices = chart.prices.slice();
+      chartInstances[chart.symbol] = instance;
+
       canvas.addEventListener('dblclick', () => chartInstances[chart.symbol]?.resetZoom?.());
     }});
 
-    setInterval(() => {{
-      Object.values(chartInstances).forEach((instance) => instance?.render?.());
-    }}, 60);
-
-    document.querySelectorAll('button.reset-zoom').forEach((button) => {{
+    document.querySelectorAll('button.trend-btn').forEach((button) => {{
       button.addEventListener('click', () => {{
-        const symbol = button.dataset.target.replace('canvas-', '');
-        chartInstances[symbol]?.resetZoom?.();
+        const trendKey = button.dataset.trend;
+        if (!trendConfig[trendKey] || trendKey === activeTrend) return;
+        updateAllChartsForTrend(trendKey);
       }});
     }});
+
+    setActiveTrendButton(activeTrend);
   </script>
 </body>
 </html>

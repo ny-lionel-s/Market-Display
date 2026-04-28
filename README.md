@@ -89,10 +89,10 @@ crontab oeffnen:
 crontab -e
 ```
 
-Beispiel: alle 15 Minuten starten und cron-Ausgabe separat protokollieren:
+Beispiel: alle 5 Minuten starten und cron-Ausgabe separat protokollieren:
 
 ```cron
-*/15 * * * * /mnt/c/Users/nicos/Desktop/TBZ/Haraldabi/MarketPulse/run_marketpulse.sh >> /mnt/c/Users/nicos/Desktop/TBZ/Haraldabi/MarketPulse/logs/cron.log 2>&1
+*/5 * * * * /mnt/c/Users/nicos/Desktop/TBZ/Haraldabi/MarketPulse/run_marketpulse.sh >> /mnt/c/Users/nicos/Desktop/TBZ/Haraldabi/MarketPulse/logs/cron.log 2>&1
 ```
 
 Pruefen, ob cron laeuft:
@@ -134,7 +134,7 @@ MARKETPULSE_SMTP_USER=dein.name@gmail.com
 MARKETPULSE_SMTP_PASSWORD=dein-app-passwort
 MARKETPULSE_ALERT_TO=empfaenger@example.com
 MARKETPULSE_ALERT_FROM=dein.name@gmail.com
-*/15 * * * * /mnt/c/Users/nicos/Desktop/TBZ/Haraldabi/MarketPulse/run_marketpulse.sh >> /mnt/c/Users/nicos/Desktop/TBZ/Haraldabi/MarketPulse/logs/cron.log 2>&1
+*/5 * * * * /mnt/c/Users/nicos/Desktop/TBZ/Haraldabi/MarketPulse/run_marketpulse.sh >> /mnt/c/Users/nicos/Desktop/TBZ/Haraldabi/MarketPulse/logs/cron.log 2>&1
 ```
 
 ## Anpassungen

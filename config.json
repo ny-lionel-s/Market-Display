@@ -34,7 +34,7 @@
     "history_csv": "data/market_history.csv",
     "log_file": "logs/marketpulse.log",
     "dashboard_html": "reports/index.html",
-    "dashboard_history_rows": 160
+    "dashboard_history_rows": 400
   },
   "email": {
     "enabled": false,
