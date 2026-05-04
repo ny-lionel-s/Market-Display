@@ -1305,3 +1305,99 @@
 2026-05-04 10:15:01,611 INFO OK asset=ETH price=2362.83 currency=USD change24h=2.255300791524583 reason=Price fetched successfully
 2026-05-04 10:15:01,611 INFO OK asset=SOL price=84.76 currency=USD change24h=0.9688490418033315 reason=Price fetched successfully
 2026-05-04 10:15:01,619 INFO OK notification=email skipped=true
+2026-05-04 10:16:01,961 INFO OK asset=BTC price=79770 currency=USD change24h=1.684727739958442 reason=Price fetched successfully
+2026-05-04 10:16:01,962 INFO OK asset=ETH price=2363.06 currency=USD change24h=2.2651947834940853 reason=Price fetched successfully
+2026-05-04 10:16:01,962 INFO OK asset=SOL price=84.77 currency=USD change24h=0.9821779381884754 reason=Price fetched successfully
+2026-05-04 10:16:01,964 INFO OK notification=email skipped=true
+2026-05-04 10:17:02,277 INFO OK asset=BTC price=79764 currency=USD change24h=1.6772582832796497 reason=Price fetched successfully
+2026-05-04 10:17:02,277 INFO OK asset=ETH price=2363.04 currency=USD change24h=2.2645109954849003 reason=Price fetched successfully
+2026-05-04 10:17:02,277 INFO OK asset=SOL price=84.81 currency=USD change24h=1.0400546874297376 reason=Price fetched successfully
+2026-05-04 10:17:02,281 INFO OK notification=email skipped=true
+2026-05-04 10:18:01,484 INFO OK asset=BTC price=79764 currency=USD change24h=1.6772582832796497 reason=Price fetched successfully
+2026-05-04 10:18:01,485 INFO OK asset=ETH price=2363.04 currency=USD change24h=2.2645109954849003 reason=Price fetched successfully
+2026-05-04 10:18:01,485 INFO OK asset=SOL price=84.81 currency=USD change24h=1.0400546874297376 reason=Price fetched successfully
+2026-05-04 10:18:01,487 INFO OK notification=email skipped=true
+2026-05-04 10:19:01,812 INFO OK asset=BTC price=79722 currency=USD change24h=1.6229834025069465 reason=Price fetched successfully
+2026-05-04 10:19:01,812 INFO OK asset=ETH price=2361.54 currency=USD change24h=2.1993374496345957 reason=Price fetched successfully
+2026-05-04 10:19:01,812 INFO OK asset=SOL price=84.74 currency=USD change24h=0.9481561537005742 reason=Price fetched successfully
+2026-05-04 10:19:01,817 INFO OK notification=email skipped=true
+2026-05-04 10:20:02,189 INFO OK asset=BTC price=79740 currency=USD change24h=1.6688323711427315 reason=Price fetched successfully
+2026-05-04 10:20:02,190 INFO OK asset=ETH price=2361.16 currency=USD change24h=2.2296535652038942 reason=Price fetched successfully
+2026-05-04 10:20:02,190 INFO OK asset=SOL price=84.75 currency=USD change24h=1.0114543143255703 reason=Price fetched successfully
+2026-05-04 10:20:02,203 INFO OK notification=email skipped=true
+2026-05-04 10:21:01,438 INFO OK asset=BTC price=79740 currency=USD change24h=1.6688323711427315 reason=Price fetched successfully
+2026-05-04 10:21:01,438 INFO OK asset=ETH price=2361.16 currency=USD change24h=2.2296535652038942 reason=Price fetched successfully
+2026-05-04 10:21:01,438 INFO OK asset=SOL price=84.75 currency=USD change24h=1.0114543143255703 reason=Price fetched successfully
+2026-05-04 10:21:01,442 INFO OK notification=email skipped=true
+2026-05-04 10:22:01,760 INFO OK asset=BTC price=79740 currency=USD change24h=1.6684777525817305 reason=Price fetched successfully
+2026-05-04 10:22:01,760 INFO OK asset=ETH price=2360.4 currency=USD change24h=2.196688406968533 reason=Price fetched successfully
+2026-05-04 10:22:01,760 INFO OK asset=SOL price=84.74 currency=USD change24h=0.9999761684509871 reason=Price fetched successfully
+2026-05-04 10:22:01,765 INFO OK notification=email skipped=true
+2026-05-04 10:23:02,089 INFO OK asset=BTC price=79726 currency=USD change24h=1.6507246008933991 reason=Price fetched successfully
+2026-05-04 10:23:02,089 INFO OK asset=ETH price=2360.43 currency=USD change24h=2.19812067853655 reason=Price fetched successfully
+2026-05-04 10:23:02,089 INFO OK asset=SOL price=84.74 currency=USD change24h=0.9972448767344325 reason=Price fetched successfully
+2026-05-04 10:23:02,093 INFO OK notification=email skipped=true
+2026-05-04 10:24:01,291 INFO OK asset=BTC price=79726 currency=USD change24h=1.6507246008933991 reason=Price fetched successfully
+2026-05-04 10:24:01,291 INFO OK asset=ETH price=2360.43 currency=USD change24h=2.19812067853655 reason=Price fetched successfully
+2026-05-04 10:24:01,291 INFO OK asset=SOL price=84.74 currency=USD change24h=0.9972448767344325 reason=Price fetched successfully
+2026-05-04 10:24:01,293 INFO OK notification=email skipped=true
+2026-05-04 10:25:01,618 INFO OK asset=BTC price=79652 currency=USD change24h=1.5564371010731726 reason=Price fetched successfully
+2026-05-04 10:25:01,619 INFO OK asset=ETH price=2359.49 currency=USD change24h=2.157649181324953 reason=Price fetched successfully
+2026-05-04 10:25:01,619 INFO OK asset=SOL price=84.71 currency=USD change24h=0.9593053943264531 reason=Price fetched successfully
+2026-05-04 10:25:01,625 INFO OK notification=email skipped=true
+2026-05-04 10:26:01,962 INFO OK asset=BTC price=79658 currency=USD change24h=1.5890597590561852 reason=Price fetched successfully
+2026-05-04 10:26:01,962 INFO OK asset=ETH price=2359.6 currency=USD change24h=2.203102886650065 reason=Price fetched successfully
+2026-05-04 10:26:01,963 INFO OK asset=SOL price=84.69 currency=USD change24h=0.985289545028702 reason=Price fetched successfully
+2026-05-04 10:26:01,977 INFO OK notification=email skipped=true
+2026-05-04 10:27:01,215 INFO OK asset=BTC price=79658 currency=USD change24h=1.5890597590561852 reason=Price fetched successfully
+2026-05-04 10:27:01,215 INFO OK asset=ETH price=2359.6 currency=USD change24h=2.203102886650065 reason=Price fetched successfully
+2026-05-04 10:27:01,215 INFO OK asset=SOL price=84.69 currency=USD change24h=0.985289545028702 reason=Price fetched successfully
+2026-05-04 10:27:01,218 INFO OK notification=email skipped=true
+2026-05-04 10:28:01,560 ERROR NotOK asset=BTC price=79676 currency=USD change24h=1.6118610834290725 reason=24h change below threshold (1.61% <= 999.00%)
+2026-05-04 10:28:01,561 INFO OK asset=ETH price=2359.68 currency=USD change24h=2.206529908232973 reason=Price fetched successfully
+2026-05-04 10:28:01,561 INFO OK asset=SOL price=84.75 currency=USD change24h=1.055184399618577 reason=Price fetched successfully
+2026-05-04 10:28:01,578 ERROR NotOK notification=email sent=false reason=Missing E-Mail environment variables: MARKETPULSE_SMTP_USER, MARKETPULSE_SMTP_PASSWORD, MARKETPULSE_ALERT_TO
+2026-05-04 10:29:01,968 ERROR NotOK asset=BTC price=79685 currency=USD change24h=1.6234672366554106 reason=24h change below threshold (1.62% <= 999.00%)
+2026-05-04 10:29:01,968 INFO OK asset=ETH price=2359.78 currency=USD change24h=2.2107926609444815 reason=Price fetched successfully
+2026-05-04 10:29:01,968 INFO OK asset=SOL price=84.78 currency=USD change24h=1.0951277516999494 reason=Price fetched successfully
+2026-05-04 10:29:01,974 ERROR NotOK notification=email sent=false reason=Missing E-Mail environment variables: MARKETPULSE_SMTP_USER, MARKETPULSE_SMTP_PASSWORD, MARKETPULSE_ALERT_TO
+2026-05-04 10:30:02,322 ERROR NotOK asset=BTC price=79708 currency=USD change24h=1.6702359173992567 reason=24h change below threshold (1.67% <= 999.00%)
+2026-05-04 10:30:02,322 INFO OK asset=ETH price=2360.21 currency=USD change24h=2.252065161979892 reason=Price fetched successfully
+2026-05-04 10:30:02,322 INFO OK asset=SOL price=84.79 currency=USD change24h=1.1013243042677507 reason=Price fetched successfully
+2026-05-04 10:30:02,326 ERROR NotOK notification=email sent=false reason=Missing E-Mail environment variables: MARKETPULSE_SMTP_USER, MARKETPULSE_SMTP_PASSWORD, MARKETPULSE_ALERT_TO
+2026-05-04 10:31:01,510 ERROR NotOK asset=BTC price=79708 currency=USD change24h=1.6702359173992567 reason=24h change below threshold (1.67% <= 999.00%)
+2026-05-04 10:31:01,510 INFO OK asset=ETH price=2360.21 currency=USD change24h=2.252065161979892 reason=Price fetched successfully
+2026-05-04 10:31:01,510 INFO OK asset=SOL price=84.79 currency=USD change24h=1.1013243042677507 reason=Price fetched successfully
+2026-05-04 10:31:01,512 ERROR NotOK notification=email sent=false reason=Missing E-Mail environment variables: MARKETPULSE_SMTP_USER, MARKETPULSE_SMTP_PASSWORD, MARKETPULSE_ALERT_TO
+2026-05-04 10:32:02,033 ERROR NotOK asset=BTC price=79696 currency=USD change24h=1.655386366202352 reason=24h change below threshold (1.66% <= 999.00%)
+2026-05-04 10:32:02,034 INFO OK asset=ETH price=2358.97 currency=USD change24h=2.1984226272964684 reason=Price fetched successfully
+2026-05-04 10:32:02,034 INFO OK asset=SOL price=84.8 currency=USD change24h=1.1198260515338991 reason=Price fetched successfully
+2026-05-04 10:32:02,038 ERROR NotOK notification=email sent=false reason=Missing E-Mail environment variables: MARKETPULSE_SMTP_USER, MARKETPULSE_SMTP_PASSWORD, MARKETPULSE_ALERT_TO
+2026-05-04 10:33:01,241 ERROR NotOK asset=BTC price=79696 currency=USD change24h=1.655386366202352 reason=24h change below threshold (1.66% <= 999.00%)
+2026-05-04 10:33:01,241 INFO OK asset=ETH price=2358.97 currency=USD change24h=2.1984226272964684 reason=Price fetched successfully
+2026-05-04 10:33:01,241 INFO OK asset=SOL price=84.8 currency=USD change24h=1.1198260515338991 reason=Price fetched successfully
+2026-05-04 10:33:01,251 ERROR NotOK notification=email sent=false reason=Missing E-Mail environment variables: MARKETPULSE_SMTP_USER, MARKETPULSE_SMTP_PASSWORD, MARKETPULSE_ALERT_TO
+2026-05-04 10:34:01,582 ERROR NotOK asset=BTC price=79735 currency=USD change24h=1.7053569950351017 reason=24h change below threshold (1.71% <= 999.00%)
+2026-05-04 10:34:01,583 INFO OK asset=ETH price=2361.09 currency=USD change24h=2.2900463531397985 reason=Price fetched successfully
+2026-05-04 10:34:01,583 INFO OK asset=SOL price=84.85 currency=USD change24h=1.1799178885455321 reason=Price fetched successfully
+2026-05-04 10:34:01,591 ERROR NotOK notification=email sent=false reason=Missing E-Mail environment variables: MARKETPULSE_SMTP_USER, MARKETPULSE_SMTP_PASSWORD, MARKETPULSE_ALERT_TO
+2026-05-04 10:35:01,951 ERROR NotOK asset=BTC price=79717 currency=USD change24h=1.6817723561078888 reason=24h change below threshold (1.68% <= 999.00%)
+2026-05-04 10:35:01,951 INFO OK asset=ETH price=2360.04 currency=USD change24h=2.2444186216576485 reason=Price fetched successfully
+2026-05-04 10:35:01,952 INFO OK asset=SOL price=84.81 currency=USD change24h=1.1331146487358401 reason=Price fetched successfully
+2026-05-04 10:35:01,963 ERROR NotOK notification=email sent=false reason=Missing E-Mail environment variables: MARKETPULSE_SMTP_USER, MARKETPULSE_SMTP_PASSWORD, MARKETPULSE_ALERT_TO
+2026-05-04 10:38:12,708 ERROR NotOK asset=BTC price=79688 currency=USD change24h=1.6425459085682936 reason=24h change below threshold (1.64% <= 999.00%)
+2026-05-04 10:38:12,708 INFO OK asset=ETH price=2358.36 currency=USD change24h=2.150527854606875 reason=Price fetched successfully
+2026-05-04 10:38:12,708 INFO OK asset=SOL price=84.77 currency=USD change24h=1.046100697502123 reason=Price fetched successfully
+2026-05-04 10:38:13,692 INFO OK notification=email sent=true
+2026-05-04 10:38:13,858 ERROR NotOK asset=BTC price=79688 currency=USD change24h=1.6425459085682936 reason=24h change below threshold (1.64% <= 999.00%)
+2026-05-04 10:38:13,858 INFO OK asset=ETH price=2358.36 currency=USD change24h=2.150527854606875 reason=Price fetched successfully
+2026-05-04 10:38:13,859 INFO OK asset=SOL price=84.77 currency=USD change24h=1.046100697502123 reason=Price fetched successfully
+2026-05-04 10:38:14,892 INFO OK notification=email sent=true
+2026-05-04 10:38:15,054 ERROR NotOK asset=BTC price=79688 currency=USD change24h=1.6425459085682936 reason=24h change below threshold (1.64% <= 999.00%)
+2026-05-04 10:38:15,055 INFO OK asset=ETH price=2358.36 currency=USD change24h=2.150527854606875 reason=Price fetched successfully
+2026-05-04 10:38:15,055 INFO OK asset=SOL price=84.77 currency=USD change24h=1.046100697502123 reason=Price fetched successfully
+2026-05-04 10:38:15,981 INFO OK notification=email sent=true
+2026-05-04 10:39:02,189 ERROR NotOK asset=BTC price=79688 currency=USD change24h=1.6425459085682936 reason=24h change below threshold (1.64% <= 999.00%)
+2026-05-04 10:39:02,189 INFO OK asset=ETH price=2358.36 currency=USD change24h=2.150527854606875 reason=Price fetched successfully
+2026-05-04 10:39:02,189 INFO OK asset=SOL price=84.77 currency=USD change24h=1.046100697502123 reason=Price fetched successfully
+2026-05-04 10:39:03,120 INFO OK notification=email sent=true

@@ -14,7 +14,7 @@
         "id": "bitcoin",
         "symbol": "BTC",
         "name": "Bitcoin",
-        "notok_drop_percent": -999.0
+        "notok_drop_percent": -5.0
       },
       {
         "id": "ethereum",
