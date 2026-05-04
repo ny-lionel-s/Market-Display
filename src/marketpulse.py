@@ -1,19 +1,7 @@
 #!/usr/bin/env python3
-"""
-MarketPulse
-===========
 
-Dieses Programm ist fuer ein LB3-Projekt mit WSL gebaut.
-Es ruft Marktkurse ueber eine API ab, bewertet jeden Wert mit OK/NotOK,
-schreibt Log-Dateien, speichert einen CSV-Verlauf, erzeugt ein HTML-Dashboard
-und kann bei NotOK automatisch eine E-Mail senden.
+#MarketPulse
 
-Bewusst sichtbar im Code:
-- Funktionen: jede Aufgabe ist in eine Funktion ausgelagert.
-- Arrays/Listen: assets, currencies, rows, history_rows.
-- Schleifen: alle konfigurierten Assets werden automatisch durchlaufen.
-- cron-tauglich: das Skript hat keine Eingabeaufforderung und laeuft automatisch.
-"""
 
 from __future__ import annotations
 
@@ -206,23 +194,21 @@ def build_error_rows(config: dict[str, Any], timestamp: str, error: Exception) -
     """Create NotOK rows when the API call itself failed."""
 
     primary_currency = config["market"].get("primary_currency", "chf").upper()
-    rows = []
-    for asset in config["market"]["assets"]:
-        rows.append(
-            {
-                "timestamp": timestamp,
-                "asset_id": asset["id"],
-                "asset_name": asset.get("name", asset["id"]),
-                "symbol": asset.get("symbol", asset["id"].upper()),
-                "currency": primary_currency,
-                "price": "",
-                "change_24h_percent": "",
-                "last_updated": "",
-                "status": STATUS_NOTOK,
-                "reason": f"API call failed: {error}",
-            }
-        )
-    return rows
+    return [
+        {
+            "timestamp": timestamp,
+            "asset_id": asset["id"],
+            "asset_name": asset.get("name", asset["id"]),
+            "symbol": asset.get("symbol", asset["id"].upper()),
+            "currency": primary_currency,
+            "price": "",
+            "change_24h_percent": "",
+            "last_updated": "",
+            "status": STATUS_NOTOK,
+            "reason": f"API call failed: {error}",
+        }
+        for asset in config["market"]["assets"]
+    ]
 
 
 def evaluate_market(config: dict[str, Any], api_data: dict[str, Any], timestamp: str) -> list[dict[str, Any]]:
@@ -231,11 +217,10 @@ def evaluate_market(config: dict[str, Any], api_data: dict[str, Any], timestamp:
     market_config = config["market"]
     primary_currency = market_config.get("primary_currency", "chf").lower()
     default_threshold = float(market_config.get("default_notok_drop_percent", -6.0))
-
-    rows = []
-    for asset in market_config["assets"]:
-        rows.append(evaluate_asset(asset, api_data, primary_currency, default_threshold, timestamp))
-    return rows
+    return [
+        evaluate_asset(asset, api_data, primary_currency, default_threshold, timestamp)
+        for asset in market_config["assets"]
+    ]
 
 
 def append_history(history_file: Path, rows: list[dict[str, Any]]) -> None:
@@ -314,148 +299,147 @@ def build_chart_data(
     assets: list[dict[str, Any]],
     primary_currency: str = "USD",
 ) -> list[dict[str, Any]]:
-    """Build one chart payload per asset with labels, prices, and stats for the dashboard."""
+    """Build the chart data used by the HTML dashboard."""
 
     primary_currency = primary_currency.upper()
-    palette = [
-        {"line": "#f7931a", "glow": "rgba(247, 147, 26, 0.35)"},
-        {"line": "#627eea", "glow": "rgba(98, 126, 234, 0.35)"},
-        {"line": "#14f195", "glow": "rgba(20, 241, 149, 0.35)"},
-        {"line": "#f43f5e", "glow": "rgba(244, 63, 94, 0.35)"},
-        {"line": "#a78bfa", "glow": "rgba(167, 139, 250, 0.35)"},
-        {"line": "#eab308", "glow": "rgba(234, 179, 8, 0.35)"},
-    ]
+    colors = ["#f7931a", "#627eea", "#14f195", "#f43f5e", "#a78bfa", "#eab308"]
     charts: list[dict[str, Any]] = []
 
     for index, asset in enumerate(assets):
         asset_id = asset["id"]
-        labels: list[str] = []
-        prices: list[float | None] = []
+        points = []
         for row in history_rows:
             if row.get("asset_id") != asset_id:
                 continue
             if str(row.get("currency", "")).upper() != primary_currency:
                 continue
-            timestamp = row.get("timestamp", "")
-            if not timestamp:
-                continue
-            labels.append(timestamp)
-            prices.append(to_float(row.get("price")))
+            timestamp = row.get("timestamp")
+            price = to_float(row.get("price"))
+            if timestamp and price is not None:
+                points.append({"x": timestamp, "y": price})
 
-        valid_prices = [price for price in prices if price is not None]
-        stats = {
-            "min": min(valid_prices) if valid_prices else None,
-            "max": max(valid_prices) if valid_prices else None,
-            "avg": sum(valid_prices) / len(valid_prices) if valid_prices else None,
-            "first": valid_prices[0] if valid_prices else None,
-            "last": valid_prices[-1] if valid_prices else None,
-        }
-        if stats["first"] and stats["last"]:
-            stats["range_change_percent"] = ((stats["last"] - stats["first"]) / stats["first"]) * 100
-        else:
-            stats["range_change_percent"] = None
-
-        color = palette[index % len(palette)]
         charts.append(
             {
                 "id": asset_id,
                 "symbol": asset.get("symbol", asset_id.upper()),
                 "name": asset.get("name", asset_id),
-                "color": color["line"],
-                "glow": color["glow"],
-                "labels": labels,
-                "prices": prices,
-                "stats": stats,
+                "color": colors[index % len(colors)],
+                "points": points,
             }
         )
 
     return charts
 
 
+def change_class(value: Any) -> str:
+    """Choose the CSS class for a positive, negative, or missing percentage."""
+
+    number = to_float(value)
+    if number is None:
+        return "neutral"
+    return "up" if number >= 0 else "down"
+
+
 def render_cards(rows: list[dict[str, Any]]) -> str:
     """Render HTML status cards for all monitored assets."""
 
     cards = []
-    for row in rows:
+    for index, row in enumerate(rows):
         status_class = "ok" if row["status"] == STATUS_OK else "notok"
+        active_class = " active" if index == 0 else ""
         symbol = html.escape(str(row["symbol"]))
-        change_value = to_float(row["change_24h_percent"])
-        change_class = "neutral"
-        if change_value is not None:
-            change_class = "up" if change_value >= 0 else "down"
-        change_arrow = "&uarr;" if change_class == "up" else ("&darr;" if change_class == "down" else "&middot;")
         cards.append(
             f"""
-            <a class="card {status_class}" href="#chart-{symbol}" data-symbol="{symbol}" title="Zum {symbol}-Chart springen">
+            <button class="card {status_class}{active_class}" type="button" data-symbol="{symbol}">
               <div class="card-top">
                 <span class="symbol">{symbol}</span>
                 <span class="pill">{html.escape(str(row['status']))}</span>
               </div>
               <h2>{html.escape(str(row['asset_name']))}</h2>
               <p class="price">{format_price(row['price'])} <span class="currency">{html.escape(str(row['currency']))}</span></p>
-              <p class="change {change_class}"><span class="arrow">{change_arrow}</span> {format_change(row['change_24h_percent'])} <span class="muted-label">24h</span></p>
+              <p class="change {change_class(row['change_24h_percent'])}">{format_change(row['change_24h_percent'])} <span class="muted-label">24h</span></p>
               <p class="reason">{html.escape(str(row['reason']))}</p>
-            </a>
+            </button>
             """
         )
     return "\n".join(cards)
 
 
-def render_chart_panels(charts: list[dict[str, Any]], rows: list[dict[str, Any]]) -> str:
-    """Render one chart panel per asset (each gets its own canvas + stats header)."""
+def render_filter_buttons(charts: list[dict[str, Any]]) -> str:
+    """Render the chart filter buttons."""
 
-    rows_by_symbol = {row["symbol"]: row for row in rows}
-    panels = []
-    for chart in charts:
+    buttons = []
+    for index, chart in enumerate(charts):
         symbol = html.escape(str(chart["symbol"]))
-        name = html.escape(str(chart["name"]))
-        row = rows_by_symbol.get(chart["symbol"], {})
-        stats = chart["stats"]
-        currency = html.escape(str(row.get("currency", "USD")))
-        latest_price = format_price(row.get("price")) if row else format_price(stats.get("last"))
-        change_value = to_float(row.get("change_24h_percent")) if row else None
-        change_class = "neutral"
-        if change_value is not None:
-            change_class = "up" if change_value >= 0 else "down"
-        change_text = format_change(row.get("change_24h_percent")) if row else "n/a"
-        min_text = format_price(stats.get("min")) if stats.get("min") is not None else "n/a"
-        max_text = format_price(stats.get("max")) if stats.get("max") is not None else "n/a"
-        avg_text = format_price(stats.get("avg")) if stats.get("avg") is not None else "n/a"
-        range_change = stats.get("range_change_percent")
-        range_class = "neutral"
-        if range_change is not None:
-            range_class = "up" if range_change >= 0 else "down"
-        range_text = f"{range_change:+.2f}%" if range_change is not None else "n/a"
+        active_class = " active" if index == 0 else ""
+        buttons.append(f'<button class="filter{active_class}" type="button" data-symbol="{symbol}">{symbol}</button>')
+    return "\n".join(buttons)
 
-        panels.append(
-            f"""
-            <section class="chart-panel" id="chart-{symbol}">
-              <header class="chart-header">
-                <div class="chart-ident">
-                  <span class="chart-dot" style="background: {chart['color']}; box-shadow: 0 0 18px {chart['glow']};"></span>
-                  <div>
-                    <p class="toolbar-title">{symbol} &middot; {name}</p>
-                    <h3 class="chart-bigprice">{latest_price}<span class="currency">{currency}</span></h3>
-                  </div>
-                </div>
-                <span class="chart-change {change_class}">{change_text} <span class="muted-label">24h</span></span>
-              </header>
-              <div class="chart-inline-stats">
-                <span><em>Min</em>{min_text}</span>
-                <span class="sep">&middot;</span>
-                <span><em>Avg</em>{avg_text}</span>
-                <span class="sep">&middot;</span>
-                <span><em>Max</em>{max_text}</span>
-                <span class="sep">&middot;</span>
-                <span><em>Range</em><b class="{range_class}">{range_text}</b></span>
-              </div>
-              <div class="chart-canvas-wrap">
-                <canvas id="canvas-{symbol}" data-symbol="{symbol}" aria-label="{name} price history chart"></canvas>
-              </div>
-            </section>
-            """
-        )
-    return "\n".join(panels)
+
+DASHBOARD_CSS = """
+:root{color-scheme:dark;--bg:#08111f;--panel:#111c2e;--line:#26354f;--text:#eef4ff;--muted:#9caec8;--ok:#22c55e;--notok:#ef4444;--accent:#60a5fa}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+main{width:min(1100px,calc(100% - 32px));margin:auto;padding:32px 0}.header,.card,.chart,.meta{background:var(--panel);border:1px solid var(--line);border-radius:12px}
+.header{padding:24px;margin-bottom:16px}h1{margin:0 0 12px;font-size:2rem}.summary,.meta{display:flex;gap:16px;flex-wrap:wrap;color:var(--muted)}strong{color:var(--text)}.ok-text{color:var(--ok)}.notok-text{color:var(--notok)}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.card{color:inherit;text-align:left;padding:18px;cursor:pointer}.card:hover,.card.active,.filter:hover{border-color:var(--accent)}.card.notok{border-color:var(--notok)}.card.notok.active{border-color:var(--accent)}
+.card-top{display:flex;justify-content:space-between;gap:12px}.symbol{color:var(--accent);font-weight:800;letter-spacing:.08em}.pill,.currency,.muted-label,.reason{color:var(--muted)}
+h2{margin:14px 0 6px;font-size:1rem;color:var(--muted)}.price{margin:0;font-size:1.6rem;font-weight:800}.change.up{color:var(--ok)}.change.down{color:var(--notok)}.change.neutral{color:var(--muted)}.reason{min-height:42px;line-height:1.4}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0 12px}button{font:inherit}.filter{border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--text);padding:8px 14px;cursor:pointer}.filter.active{background:var(--accent);border-color:var(--accent);color:#05101f}
+.chart{height:420px;padding:18px}.meta{margin-top:18px;padding:14px 18px}code{color:#bfdbfe}@media(max-width:800px){.grid{grid-template-columns:1fr}.chart{height:320px}}
+"""
+
+
+DASHBOARD_SCRIPT = """
+const charts = __CHARTS_JSON__;
+const firstSymbol = charts.length ? charts[0].symbol : '';
+const chart = new Chart(document.getElementById('priceChart'), {
+  type: 'line',
+  data: { datasets: datasetsFor(firstSymbol) },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'nearest', intersect: false },
+    plugins: { legend: { labels: { color: '#eef4ff' } } },
+    scales: {
+      x: { type: 'category', ticks: { color: '#9caec8' }, grid: { color: '#1b2a40' } },
+      y: { ticks: { color: '#9caec8' }, grid: { color: '#1b2a40' } },
+    },
+  },
+});
+
+function label(value) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? value
+    : date.toLocaleString('de-CH', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+
+function datasetsFor(symbol) {
+  return charts
+    .filter((item) => item.symbol === symbol)
+    .map((item) => ({
+      label: item.symbol,
+      data: item.points.map((point) => ({ x: label(point.x), y: point.y })),
+      borderColor: item.color,
+      backgroundColor: item.color,
+      borderWidth: 2,
+      pointRadius: 2,
+      tension: 0.15,
+    }));
+}
+
+function show(symbol) {
+  document.querySelectorAll('[data-symbol]').forEach((button) => {
+    button.classList.toggle('active', button.dataset.symbol === symbol);
+  });
+  chart.data.datasets = datasetsFor(symbol);
+  chart.update();
+}
+
+document.querySelectorAll('[data-symbol]').forEach((button) => {
+  button.addEventListener('click', () => show(button.dataset.symbol));
+});
+"""
 
 
 def generate_dashboard(
@@ -478,9 +462,7 @@ def generate_dashboard(
     notok_count = sum(1 for row in rows if row["status"] == STATUS_NOTOK)
     overall_status = STATUS_NOTOK if notok_count else STATUS_OK
     generated_at = utc_now().isoformat(timespec="seconds")
-    cards_html = render_cards(rows)
-    chart_panels_html = render_chart_panels(charts, rows)
-    charts_json = json.dumps(charts)
+    dashboard_script = DASHBOARD_SCRIPT.replace("__CHARTS_JSON__", json.dumps(charts))
     title = html.escape(config["project"].get("dashboard_title", "MarketPulse"))
 
     dashboard_html = f"""<!doctype html>
@@ -490,418 +472,38 @@ def generate_dashboard(
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{title}</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
-  <style>
-    :root {{
-      color-scheme: dark;
-      --bg-0: #050912;
-      --bg-1: #0b1426;
-      --panel: rgba(15, 23, 42, 0.72);
-      --panel-strong: rgba(15, 23, 42, 0.92);
-      --line: rgba(148, 163, 184, 0.18);
-      --line-strong: rgba(148, 163, 184, 0.32);
-      --text: #f1f5fb;
-      --muted: #94a3b8;
-      --muted-soft: #cbd5e1;
-      --ok: #22c55e;
-      --notok: #ef4444;
-      --up: #22c55e;
-      --down: #ef4444;
-      --accent: #60a5fa;
-      --accent-2: #a78bfa;
-    }}
-    * {{ box-sizing: border-box; }}
-    html {{ scroll-behavior: smooth; }}
-    body {{
-      margin: 0;
-      min-height: 100vh;
-      font-family: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-feature-settings: "ss01", "cv11", "tnum";
-      background:
-        radial-gradient(1200px 600px at 10% -10%, rgba(96, 165, 250, 0.18), transparent 60%),
-        radial-gradient(900px 500px at 90% 0%, rgba(167, 139, 250, 0.16), transparent 60%),
-        radial-gradient(700px 500px at 50% 110%, rgba(20, 241, 149, 0.10), transparent 60%),
-        linear-gradient(180deg, var(--bg-0), var(--bg-1));
-      color: var(--text);
-      -webkit-font-smoothing: antialiased;
-    }}
-    main {{ width: min(1280px, calc(100% - 36px)); margin: 0 auto; padding: 48px 0 64px; }}
-    .hero {{
-      position: relative;
-      overflow: hidden;
-      padding: 36px;
-      border: 1px solid var(--line);
-      border-radius: 32px;
-      background:
-        linear-gradient(135deg, rgba(96, 165, 250, 0.12), rgba(167, 139, 250, 0.08) 40%, rgba(15, 23, 42, 0.6)),
-        var(--panel-strong);
-      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.45);
-      margin-bottom: 28px;
-    }}
-    .hero::after {{
-      content: "";
-      position: absolute;
-      inset: -20% -10% auto auto;
-      width: 380px; height: 380px;
-      background: radial-gradient(circle, rgba(96, 165, 250, 0.32), transparent 60%);
-      filter: blur(20px);
-      pointer-events: none;
-    }}
-    .hero-row {{ display: flex; justify-content: space-between; gap: 24px; align-items: end; flex-wrap: wrap; position: relative; z-index: 1; }}
-    .brand {{ display: inline-flex; align-items: center; gap: 10px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line-strong); background: rgba(255, 255, 255, 0.04); color: var(--muted); font-size: 0.78rem; font-weight: 800; letter-spacing: 0.22em; text-transform: uppercase; }}
-    .brand-dot {{ width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 14px var(--ok); animation: pulse 1.6s ease-in-out infinite; }}
-    .brand.notok .brand-dot {{ background: var(--notok); box-shadow: 0 0 14px var(--notok); }}
-    @keyframes pulse {{ 0%, 100% {{ opacity: 1; transform: scale(1); }} 50% {{ opacity: 0.5; transform: scale(1.4); }} }}
-    h1 {{ margin: 16px 0 0; font-size: clamp(2.4rem, 5.4vw, 4.6rem); letter-spacing: -0.04em; line-height: 1; font-weight: 900; background: linear-gradient(120deg, #ffffff 0%, #c7d2fe 50%, #a78bfa 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }}
-    .subtitle {{ margin: 14px 0 0; color: var(--muted); max-width: 720px; line-height: 1.6; font-size: 1rem; }}
-    .hero-stats {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-top: 24px; position: relative; z-index: 1; }}
-    .hero-stat {{ padding: 14px 16px; border: 1px solid var(--line); border-radius: 18px; background: rgba(255,255,255,0.03); }}
-    .hero-stat-label {{ font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); font-weight: 800; }}
-    .hero-stat-value {{ margin-top: 6px; font-size: 1.4rem; font-weight: 900; letter-spacing: -0.02em; }}
-    .hero-stat-value.ok {{ color: var(--ok); }}
-    .hero-stat-value.notok {{ color: var(--notok); }}
-
-    .section-title {{ margin: 28px 0 14px; font-size: 0.78rem; letter-spacing: 0.24em; text-transform: uppercase; color: var(--muted); font-weight: 900; }}
-    .trend-toolbar {{ display: flex; gap: 10px; flex-wrap: wrap; margin: 0 0 16px; }}
-    .trend-btn {{
-      border: 1px solid var(--line-strong);
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.65);
-      color: var(--muted-soft);
-      font-size: 0.75rem;
-      font-weight: 800;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      padding: 7px 12px;
-    }}
-    .trend-btn:hover {{ border-color: rgba(96, 165, 250, 0.7); color: var(--text); }}
-    .trend-btn.active {{
-      background: rgba(96, 165, 250, 0.24);
-      border-color: rgba(96, 165, 250, 0.85);
-      color: #ffffff;
-      box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.25) inset;
-    }}
-    .grid {{ display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }}
-    a.card {{ text-decoration: none; color: inherit; display: block; }}
-    .card, .chart-panel, .meta-panel {{
-      border: 1px solid var(--line);
-      border-radius: 22px;
-      background: var(--panel);
-      backdrop-filter: blur(18px);
-      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
-    }}
-    .card {{ padding: 22px; position: relative; overflow: hidden; transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease; }}
-    .card:hover {{ transform: translateY(-3px); border-color: rgba(96, 165, 250, 0.6); box-shadow: 0 28px 80px rgba(96, 165, 250, 0.18); }}
-    .card::before {{ content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: linear-gradient(180deg, var(--ok), transparent); }}
-    .card.notok::before {{ background: linear-gradient(180deg, var(--notok), transparent); }}
-    .card-top {{ display: flex; justify-content: space-between; gap: 12px; align-items: center; }}
-    .symbol {{ color: var(--accent); font-weight: 900; letter-spacing: 0.16em; font-size: 0.92rem; }}
-    .pill {{ padding: 5px 10px; border-radius: 999px; background: rgba(148, 163, 184, 0.12); font-size: 0.7rem; font-weight: 800; letter-spacing: 0.12em; }}
-    .card.ok .pill {{ color: var(--ok); background: rgba(34, 197, 94, 0.12); }}
-    .card.notok .pill {{ color: var(--notok); background: rgba(239, 68, 68, 0.14); }}
-    h2 {{ margin: 14px 0 4px; font-size: 0.92rem; color: var(--muted); font-weight: 700; letter-spacing: 0.02em; }}
-    .price {{ margin: 0; font-size: 2rem; font-weight: 900; letter-spacing: -0.04em; }}
-    .price .currency {{ font-size: 0.85rem; color: var(--muted); margin-left: 6px; letter-spacing: 0.12em; font-weight: 800; }}
-    .change {{ margin: 10px 0 0; font-weight: 800; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; }}
-    .change .arrow {{ font-size: 0.85rem; }}
-    .change .muted-label {{ color: var(--muted); font-weight: 700; margin-left: 6px; }}
-    .change.up {{ color: var(--up); background: rgba(34, 197, 94, 0.1); }}
-    .change.down {{ color: var(--down); background: rgba(239, 68, 68, 0.12); }}
-    .change.neutral {{ color: var(--muted); background: rgba(148, 163, 184, 0.1); }}
-    .reason {{ min-height: 32px; margin: 14px 0 0; color: var(--muted-soft); font-size: 0.86rem; line-height: 1.5; }}
-
-    .chart-panel {{
-      margin-top: 18px;
-      padding: 36px 40px 28px;
-      scroll-margin-top: 28px;
-      background:
-        linear-gradient(160deg, rgba(96, 165, 250, 0.06), rgba(15, 23, 42, 0.7) 40%),
-        var(--panel-strong);
-      color: var(--text);
-      border: 1px solid var(--line);
-      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
-      font-family: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }}
-    .chart-header {{ display: flex; justify-content: space-between; gap: 20px; align-items: baseline; flex-wrap: wrap; margin-bottom: 8px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }}
-    .chart-ident {{ display: flex; align-items: center; gap: 14px; }}
-    .chart-dot {{ width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }}
-    .toolbar-title {{ margin: 0 0 6px; color: var(--muted); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; }}
-    .chart-bigprice {{ margin: 0; font-size: 2.6rem; font-weight: 800; letter-spacing: -0.04em; line-height: 1; color: var(--text); font-feature-settings: "tnum"; }}
-    .chart-bigprice .currency {{ font-size: 0.78rem; color: var(--muted); margin-left: 8px; letter-spacing: 0.16em; font-weight: 700; vertical-align: middle; }}
-    .chart-change {{ font-weight: 700; font-size: 0.92rem; padding: 6px 14px; border-radius: 999px; letter-spacing: 0.02em; }}
-    .chart-change.up {{ color: #34d399; background: rgba(5, 150, 105, 0.20); }}
-    .chart-change.down {{ color: #f87171; background: rgba(185, 28, 28, 0.20); }}
-    .chart-change.neutral {{ color: var(--muted-soft); background: rgba(107, 114, 128, 0.18); }}
-    .chart-change .muted-label {{ color: currentColor; opacity: 0.6; margin-left: 4px; font-weight: 600; }}
-    .chart-inline-stats {{ display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin: 18px 0 24px; color: var(--muted-soft); font-size: 0.9rem; font-feature-settings: "tnum"; }}
-    .chart-inline-stats em {{ font-style: normal; color: var(--muted); font-size: 0.66rem; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700; margin-right: 8px; }}
-    .chart-inline-stats b {{ font-weight: 800; }}
-    .chart-inline-stats .sep {{ color: var(--line-strong); }}
-    .chart-inline-stats .up {{ color: #34d399; }}
-    .chart-inline-stats .down {{ color: #f87171; }}
-    .chart-canvas-wrap {{ position: relative; height: 420px; }}
-    button {{
-      border: 1px solid var(--line-strong);
-      border-radius: 12px;
-      background: rgba(15, 23, 42, 0.7);
-      color: var(--text);
-      cursor: pointer;
-      font: inherit;
-      font-weight: 700;
-      font-size: 0.85rem;
-      letter-spacing: 0.06em;
-      padding: 8px 14px;
-      transition: background 160ms ease, border-color 160ms ease, transform 160ms ease, opacity 160ms ease;
-    }}
-    button:hover {{ background: rgba(96, 165, 250, 0.16); border-color: rgba(96, 165, 250, 0.7); transform: translateY(-1px); }}
-    .meta-panel {{ margin-top: 24px; padding: 20px 24px; color: var(--muted); display: flex; justify-content: space-between; gap: 18px; flex-wrap: wrap; font-size: 0.88rem; }}
-    canvas {{ width: 100% !important; height: 100% !important; }}
-    code {{ color: #bae6fd; font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.85rem; }}
-    @media (max-width: 980px) {{
-      .grid {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }}
-      .chart-stats {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }}
-    }}
-    @media (max-width: 640px) {{
-      main {{ width: min(100% - 20px, 1280px); padding: 24px 0; }}
-      .grid {{ grid-template-columns: 1fr; }}
-      .hero {{ padding: 24px; border-radius: 24px; }}
-      .chart-panel {{ padding: 20px; }}
-      .chart-canvas-wrap {{ height: 280px; }}
-    }}
-  </style>
+  <style>{DASHBOARD_CSS}</style>
 </head>
 <body>
   <main>
-    <section class="hero">
-      <div class="hero-row">
-        <div>
-          <span class="brand {'notok' if overall_status == STATUS_NOTOK else ''}"><span class="brand-dot"></span> MarketPulse Live</span>
-          <h1>{title}</h1>
-          <p class="subtitle">Crypto-Marktueberwachung mit OK/NotOK-Logik. Kurse via CoinGecko, automatisch via cron, mit CSV-Verlauf, Logging und E-Mail-Alerts.</p>
-        </div>
-      </div>
-      <div class="hero-stats">
-        <div class="hero-stat">
-          <div class="hero-stat-label">Status</div>
-          <div class="hero-stat-value {'notok' if overall_status == STATUS_NOTOK else 'ok'}">{overall_status}</div>
-        </div>
-        <div class="hero-stat">
-          <div class="hero-stat-label">Assets</div>
-          <div class="hero-stat-value">{len(rows)}</div>
-        </div>
-        <div class="hero-stat">
-          <div class="hero-stat-label">NotOK</div>
-          <div class="hero-stat-value {'notok' if notok_count else 'ok'}">{notok_count}</div>
-        </div>
-        <div class="hero-stat">
-          <div class="hero-stat-label">Updated</div>
-          <div class="hero-stat-value" style="font-size:0.95rem;">{html.escape(generated_at)}</div>
-        </div>
+    <section class="header">
+      <h1>{title}</h1>
+      <div class="summary">
+        <span>Status: <strong class="{'notok-text' if overall_status == STATUS_NOTOK else 'ok-text'}">{overall_status}</strong></span>
+        <span>Assets: <strong>{len(rows)}</strong></span>
+        <span>NotOK: <strong>{notok_count}</strong></span>
+        <span>Updated: <strong>{html.escape(generated_at)}</strong></span>
       </div>
     </section>
 
-    <p class="section-title">Marktuebersicht</p>
     <section class="grid">
-      {cards_html}
+      {render_cards(rows)}
     </section>
 
-    <p class="section-title">Kursverlauf</p>
-    <div class="trend-toolbar" role="group" aria-label="Trend Zeitraum waehlen">
-      <button type="button" class="trend-btn active" data-trend="5min">5min</button>
-      <button type="button" class="trend-btn" data-trend="1h">1h</button>
-      <button type="button" class="trend-btn" data-trend="1d">1d</button>
+    <div class="toolbar">
+      {render_filter_buttons(charts)}
     </div>
-    {chart_panels_html}
+    <section class="chart">
+      <canvas id="priceChart"></canvas>
+    </section>
 
-    <section class="meta-panel">
-      <span>Generated: <code>{html.escape(generated_at)}</code></span>
-      <span>NotOK assets: <code>{notok_count}</code></span>
+    <section class="meta">
       <span>History: <code>data/market_history.csv</code></span>
       <span>Log: <code>logs/marketpulse.log</code></span>
     </section>
   </main>
 
-  <script>
-    const charts = {charts_json};
-    const chartInstances = {{}};
-    const trendConfig = {{
-      '5min': {{ windowMs: 5 * 60 * 1000 }},
-      '1h': {{ windowMs: 60 * 60 * 1000 }},
-      '1d': {{ windowMs: 24 * 60 * 60 * 1000 }},
-    }};
-    let activeTrend = '5min';
-
-    function shortLabel(iso) {{
-      const date = new Date(iso);
-      if (Number.isNaN(date.getTime())) return iso;
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const hour = String(date.getHours()).padStart(2, '0');
-      const minute = String(date.getMinutes()).padStart(2, '0');
-      return `${{day}}.${{month}} ${{hour}}:${{minute}}`;
-    }}
-
-    function formatPrice(value) {{
-      if (value === null || value === undefined || Number.isNaN(value)) return 'n/a';
-      return new Intl.NumberFormat('de-CH', {{ minimumFractionDigits: value >= 100 ? 2 : 4, maximumFractionDigits: value >= 100 ? 2 : 4 }}).format(value);
-    }}
-
-    function trendSlice(labels, prices, trendKey) {{
-      const config = trendConfig[trendKey] || trendConfig['1h'];
-      const entries = labels
-        .map((label, index) => ({{
-          rawPrice: prices[index],
-          label,
-          timestamp: Date.parse(label),
-        }}))
-        .map((entry) => ({{
-          ...entry,
-          price:
-            entry.rawPrice === null || entry.rawPrice === undefined || entry.rawPrice === ''
-              ? Number.NaN
-              : Number(entry.rawPrice),
-        }}))
-        .filter((entry) => !Number.isNaN(entry.timestamp) && Number.isFinite(entry.price))
-        .sort((a, b) => a.timestamp - b.timestamp);
-
-      if (!entries.length) {{
-        return {{ labels: labels.slice(), prices: prices.slice() }};
-      }}
-
-      const latestTimestamp = entries[entries.length - 1].timestamp;
-      const cutoffTimestamp = latestTimestamp - config.windowMs;
-      const filtered = entries.filter((entry) => entry.timestamp >= cutoffTimestamp);
-      const selected = filtered.length ? filtered : [entries[entries.length - 1]];
-
-      return {{
-        labels: selected.map((entry) => entry.label),
-        prices: selected.map((entry) => entry.price),
-      }};
-    }}
-
-    function setActiveTrendButton(trendKey) {{
-      document.querySelectorAll('button.trend-btn').forEach((button) => {{
-        button.classList.toggle('active', button.dataset.trend === trendKey);
-      }});
-    }}
-
-    function applyTrend(instance, trendKey) {{
-      const sliced = trendSlice(instance.$sourceLabels, instance.$sourcePrices, trendKey);
-      instance.data.labels = sliced.labels.map(shortLabel);
-      instance.data.datasets[0].data = sliced.prices;
-      instance.resetZoom?.();
-      instance.update();
-    }}
-
-    function updateAllChartsForTrend(trendKey) {{
-      activeTrend = trendKey;
-      setActiveTrendButton(trendKey);
-      Object.values(chartInstances).forEach((instance) => applyTrend(instance, trendKey));
-    }}
-
-    charts.forEach((chart) => {{
-      const canvas = document.getElementById(`canvas-${{chart.symbol}}`);
-      if (!canvas) return;
-      const slicedTrend = trendSlice(chart.labels, chart.prices, activeTrend);
-
-      const instance = new Chart(canvas, {{
-        type: 'line',
-        data: {{
-          labels: slicedTrend.labels.map(shortLabel),
-          datasets: [{{
-            label: chart.symbol,
-            data: slicedTrend.prices,
-            borderColor: chart.color,
-            borderWidth: 2.2,
-            tension: 0,
-            spanGaps: true,
-            fill: false,
-            pointRadius: 0,
-            pointHoverRadius: 4,
-            pointHoverBackgroundColor: chart.color,
-            pointHoverBorderColor: '#0b1426',
-            pointHoverBorderWidth: 2,
-          }}]
-        }},
-        options: {{
-          responsive: true,
-          maintainAspectRatio: false,
-          layout: {{ padding: {{ right: 16, top: 16, bottom: 4, left: 4 }} }},
-          interaction: {{ mode: 'index', intersect: false }},
-          animation: {{ duration: 700, easing: 'easeOutCubic' }},
-          plugins: {{
-            legend: {{ display: false }},
-            tooltip: {{
-              backgroundColor: 'rgba(11, 20, 38, 0.96)',
-              borderColor: 'rgba(148, 163, 184, 0.18)',
-              borderWidth: 1,
-              titleColor: '#94a3b8',
-              titleFont: {{ size: 11, weight: '600' }},
-               bodyColor: '#f1f5fb',
-               bodyFont: {{ size: 13, weight: '700' }},
-                padding: 12,
-                cornerRadius: 10,
-                displayColors: false,
-                callbacks: {{
-                  title: (items) => items[0] ? items[0].label : '',
-                  label: (item) => `${{formatPrice(item.raw)}}`
-                }}
-              }},
-              zoom: {{
-              limits: {{ x: {{ min: 'original', max: 'original' }}, y: {{ min: 'original', max: 'original' }} }},
-              pan: {{ enabled: true, mode: 'x', modifierKey: 'shift' }},
-              zoom: {{
-                wheel: {{ enabled: true, speed: 0.08 }},
-                pinch: {{ enabled: true }},
-                drag: {{ enabled: true, backgroundColor: chart.glow, borderColor: chart.color, borderWidth: 1 }},
-                mode: 'x'
-              }}
-            }}
-          }},
-           scales: {{
-             x: {{
-               ticks: {{
-                 color: 'rgba(148, 163, 184, 0.65)',
-                 font: {{ size: 10, weight: '600' }},
-                 maxTicksLimit: 8,
-               }},
-               grid: {{ display: false }},
-               border: {{ display: false }}
-             }},
-             y: {{
-               position: 'right',
-              ticks: {{
-                color: 'rgba(148, 163, 184, 0.6)',
-                font: {{ size: 10, weight: '600' }},
-                maxTicksLimit: 4,
-                padding: 8,
-                callback: (value) => formatPrice(value)
-              }},
-              grid: {{ display: false }},
-              border: {{ display: false }}
-            }}
-          }}
-        }}
-      }});
-
-      instance.$sourceLabels = chart.labels.slice();
-      instance.$sourcePrices = chart.prices.slice();
-      chartInstances[chart.symbol] = instance;
-
-      canvas.addEventListener('dblclick', () => chartInstances[chart.symbol]?.resetZoom?.());
-    }});
-
-    document.querySelectorAll('button.trend-btn').forEach((button) => {{
-      button.addEventListener('click', () => {{
-        const trendKey = button.dataset.trend;
-        if (!trendConfig[trendKey] || trendKey === activeTrend) return;
-        updateAllChartsForTrend(trendKey);
-      }});
-    }});
-
-    setActiveTrendButton(activeTrend);
-  </script>
+  <script>{dashboard_script}</script>
 </body>
 </html>
 """

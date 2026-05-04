@@ -14,7 +14,7 @@
         "id": "bitcoin",
         "symbol": "BTC",
         "name": "Bitcoin",
-        "notok_drop_percent": -5.0
+        "notok_drop_percent": -999.0
       },
       {
         "id": "ethereum",
@@ -37,7 +37,7 @@
     "dashboard_history_rows": 400
   },
   "email": {
-    "enabled": false,
+    "enabled": true,
     "send_when": "notok",
     "smtp_host": "smtp.gmail.com",
     "smtp_port": 587,

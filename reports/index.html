@@ -5,529 +5,134 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>MarketPulse HTML Market Display</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
   <style>
-    :root {
-      color-scheme: dark;
-      --bg-0: #050912;
-      --bg-1: #0b1426;
-      --panel: rgba(15, 23, 42, 0.72);
-      --panel-strong: rgba(15, 23, 42, 0.92);
-      --line: rgba(148, 163, 184, 0.18);
-      --line-strong: rgba(148, 163, 184, 0.32);
-      --text: #f1f5fb;
-      --muted: #94a3b8;
-      --muted-soft: #cbd5e1;
-      --ok: #22c55e;
-      --notok: #ef4444;
-      --up: #22c55e;
-      --down: #ef4444;
-      --accent: #60a5fa;
-      --accent-2: #a78bfa;
-    }
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-feature-settings: "ss01", "cv11", "tnum";
-      background:
-        radial-gradient(1200px 600px at 10% -10%, rgba(96, 165, 250, 0.18), transparent 60%),
-        radial-gradient(900px 500px at 90% 0%, rgba(167, 139, 250, 0.16), transparent 60%),
-        radial-gradient(700px 500px at 50% 110%, rgba(20, 241, 149, 0.10), transparent 60%),
-        linear-gradient(180deg, var(--bg-0), var(--bg-1));
-      color: var(--text);
-      -webkit-font-smoothing: antialiased;
-    }
-    main { width: min(1280px, calc(100% - 36px)); margin: 0 auto; padding: 48px 0 64px; }
-    .hero {
-      position: relative;
-      overflow: hidden;
-      padding: 36px;
-      border: 1px solid var(--line);
-      border-radius: 32px;
-      background:
-        linear-gradient(135deg, rgba(96, 165, 250, 0.12), rgba(167, 139, 250, 0.08) 40%, rgba(15, 23, 42, 0.6)),
-        var(--panel-strong);
-      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.45);
-      margin-bottom: 28px;
-    }
-    .hero::after {
-      content: "";
-      position: absolute;
-      inset: -20% -10% auto auto;
-      width: 380px; height: 380px;
-      background: radial-gradient(circle, rgba(96, 165, 250, 0.32), transparent 60%);
-      filter: blur(20px);
-      pointer-events: none;
-    }
-    .hero-row { display: flex; justify-content: space-between; gap: 24px; align-items: end; flex-wrap: wrap; position: relative; z-index: 1; }
-    .brand { display: inline-flex; align-items: center; gap: 10px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line-strong); background: rgba(255, 255, 255, 0.04); color: var(--muted); font-size: 0.78rem; font-weight: 800; letter-spacing: 0.22em; text-transform: uppercase; }
-    .brand-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 14px var(--ok); animation: pulse 1.6s ease-in-out infinite; }
-    .brand.notok .brand-dot { background: var(--notok); box-shadow: 0 0 14px var(--notok); }
-    @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.4); } }
-    h1 { margin: 16px 0 0; font-size: clamp(2.4rem, 5.4vw, 4.6rem); letter-spacing: -0.04em; line-height: 1; font-weight: 900; background: linear-gradient(120deg, #ffffff 0%, #c7d2fe 50%, #a78bfa 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
-    .subtitle { margin: 14px 0 0; color: var(--muted); max-width: 720px; line-height: 1.6; font-size: 1rem; }
-    .hero-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-top: 24px; position: relative; z-index: 1; }
-    .hero-stat { padding: 14px 16px; border: 1px solid var(--line); border-radius: 18px; background: rgba(255,255,255,0.03); }
-    .hero-stat-label { font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); font-weight: 800; }
-    .hero-stat-value { margin-top: 6px; font-size: 1.4rem; font-weight: 900; letter-spacing: -0.02em; }
-    .hero-stat-value.ok { color: var(--ok); }
-    .hero-stat-value.notok { color: var(--notok); }
-
-    .section-title { margin: 28px 0 14px; font-size: 0.78rem; letter-spacing: 0.24em; text-transform: uppercase; color: var(--muted); font-weight: 900; }
-    .trend-toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin: 0 0 16px; }
-    .trend-btn {
-      border: 1px solid var(--line-strong);
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.65);
-      color: var(--muted-soft);
-      font-size: 0.75rem;
-      font-weight: 800;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      padding: 7px 12px;
-    }
-    .trend-btn:hover { border-color: rgba(96, 165, 250, 0.7); color: var(--text); }
-    .trend-btn.active {
-      background: rgba(96, 165, 250, 0.24);
-      border-color: rgba(96, 165, 250, 0.85);
-      color: #ffffff;
-      box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.25) inset;
-    }
-    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-    a.card { text-decoration: none; color: inherit; display: block; }
-    .card, .chart-panel, .meta-panel {
-      border: 1px solid var(--line);
-      border-radius: 22px;
-      background: var(--panel);
-      backdrop-filter: blur(18px);
-      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
-    }
-    .card { padding: 22px; position: relative; overflow: hidden; transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease; }
-    .card:hover { transform: translateY(-3px); border-color: rgba(96, 165, 250, 0.6); box-shadow: 0 28px 80px rgba(96, 165, 250, 0.18); }
-    .card::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: linear-gradient(180deg, var(--ok), transparent); }
-    .card.notok::before { background: linear-gradient(180deg, var(--notok), transparent); }
-    .card-top { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
-    .symbol { color: var(--accent); font-weight: 900; letter-spacing: 0.16em; font-size: 0.92rem; }
-    .pill { padding: 5px 10px; border-radius: 999px; background: rgba(148, 163, 184, 0.12); font-size: 0.7rem; font-weight: 800; letter-spacing: 0.12em; }
-    .card.ok .pill { color: var(--ok); background: rgba(34, 197, 94, 0.12); }
-    .card.notok .pill { color: var(--notok); background: rgba(239, 68, 68, 0.14); }
-    h2 { margin: 14px 0 4px; font-size: 0.92rem; color: var(--muted); font-weight: 700; letter-spacing: 0.02em; }
-    .price { margin: 0; font-size: 2rem; font-weight: 900; letter-spacing: -0.04em; }
-    .price .currency { font-size: 0.85rem; color: var(--muted); margin-left: 6px; letter-spacing: 0.12em; font-weight: 800; }
-    .change { margin: 10px 0 0; font-weight: 800; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; }
-    .change .arrow { font-size: 0.85rem; }
-    .change .muted-label { color: var(--muted); font-weight: 700; margin-left: 6px; }
-    .change.up { color: var(--up); background: rgba(34, 197, 94, 0.1); }
-    .change.down { color: var(--down); background: rgba(239, 68, 68, 0.12); }
-    .change.neutral { color: var(--muted); background: rgba(148, 163, 184, 0.1); }
-    .reason { min-height: 32px; margin: 14px 0 0; color: var(--muted-soft); font-size: 0.86rem; line-height: 1.5; }
-
-    .chart-panel {
-      margin-top: 18px;
-      padding: 36px 40px 28px;
-      scroll-margin-top: 28px;
-      background:
-        linear-gradient(160deg, rgba(96, 165, 250, 0.06), rgba(15, 23, 42, 0.7) 40%),
-        var(--panel-strong);
-      color: var(--text);
-      border: 1px solid var(--line);
-      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
-      font-family: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-    .chart-header { display: flex; justify-content: space-between; gap: 20px; align-items: baseline; flex-wrap: wrap; margin-bottom: 8px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
-    .chart-ident { display: flex; align-items: center; gap: 14px; }
-    .chart-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-    .toolbar-title { margin: 0 0 6px; color: var(--muted); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; }
-    .chart-bigprice { margin: 0; font-size: 2.6rem; font-weight: 800; letter-spacing: -0.04em; line-height: 1; color: var(--text); font-feature-settings: "tnum"; }
-    .chart-bigprice .currency { font-size: 0.78rem; color: var(--muted); margin-left: 8px; letter-spacing: 0.16em; font-weight: 700; vertical-align: middle; }
-    .chart-change { font-weight: 700; font-size: 0.92rem; padding: 6px 14px; border-radius: 999px; letter-spacing: 0.02em; }
-    .chart-change.up { color: #34d399; background: rgba(5, 150, 105, 0.20); }
-    .chart-change.down { color: #f87171; background: rgba(185, 28, 28, 0.20); }
-    .chart-change.neutral { color: var(--muted-soft); background: rgba(107, 114, 128, 0.18); }
-    .chart-change .muted-label { color: currentColor; opacity: 0.6; margin-left: 4px; font-weight: 600; }
-    .chart-inline-stats { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin: 18px 0 24px; color: var(--muted-soft); font-size: 0.9rem; font-feature-settings: "tnum"; }
-    .chart-inline-stats em { font-style: normal; color: var(--muted); font-size: 0.66rem; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700; margin-right: 8px; }
-    .chart-inline-stats b { font-weight: 800; }
-    .chart-inline-stats .sep { color: var(--line-strong); }
-    .chart-inline-stats .up { color: #34d399; }
-    .chart-inline-stats .down { color: #f87171; }
-    .chart-canvas-wrap { position: relative; height: 420px; }
-    button {
-      border: 1px solid var(--line-strong);
-      border-radius: 12px;
-      background: rgba(15, 23, 42, 0.7);
-      color: var(--text);
-      cursor: pointer;
-      font: inherit;
-      font-weight: 700;
-      font-size: 0.85rem;
-      letter-spacing: 0.06em;
-      padding: 8px 14px;
-      transition: background 160ms ease, border-color 160ms ease, transform 160ms ease, opacity 160ms ease;
-    }
-    button:hover { background: rgba(96, 165, 250, 0.16); border-color: rgba(96, 165, 250, 0.7); transform: translateY(-1px); }
-    .meta-panel { margin-top: 24px; padding: 20px 24px; color: var(--muted); display: flex; justify-content: space-between; gap: 18px; flex-wrap: wrap; font-size: 0.88rem; }
-    canvas { width: 100% !important; height: 100% !important; }
-    code { color: #bae6fd; font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.85rem; }
-    @media (max-width: 980px) {
-      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .chart-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
-    @media (max-width: 640px) {
-      main { width: min(100% - 20px, 1280px); padding: 24px 0; }
-      .grid { grid-template-columns: 1fr; }
-      .hero { padding: 24px; border-radius: 24px; }
-      .chart-panel { padding: 20px; }
-      .chart-canvas-wrap { height: 280px; }
-    }
-  </style>
+:root{color-scheme:dark;--bg:#08111f;--panel:#111c2e;--line:#26354f;--text:#eef4ff;--muted:#9caec8;--ok:#22c55e;--notok:#ef4444;--accent:#60a5fa}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+main{width:min(1100px,calc(100% - 32px));margin:auto;padding:32px 0}.header,.card,.chart,.meta{background:var(--panel);border:1px solid var(--line);border-radius:12px}
+.header{padding:24px;margin-bottom:16px}h1{margin:0 0 12px;font-size:2rem}.summary,.meta{display:flex;gap:16px;flex-wrap:wrap;color:var(--muted)}strong{color:var(--text)}.ok-text{color:var(--ok)}.notok-text{color:var(--notok)}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.card{color:inherit;text-align:left;padding:18px;cursor:pointer}.card:hover,.card.active,.filter:hover{border-color:var(--accent)}.card.notok{border-color:var(--notok)}.card.notok.active{border-color:var(--accent)}
+.card-top{display:flex;justify-content:space-between;gap:12px}.symbol{color:var(--accent);font-weight:800;letter-spacing:.08em}.pill,.currency,.muted-label,.reason{color:var(--muted)}
+h2{margin:14px 0 6px;font-size:1rem;color:var(--muted)}.price{margin:0;font-size:1.6rem;font-weight:800}.change.up{color:var(--ok)}.change.down{color:var(--notok)}.change.neutral{color:var(--muted)}.reason{min-height:42px;line-height:1.4}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0 12px}button{font:inherit}.filter{border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--text);padding:8px 14px;cursor:pointer}.filter.active{background:var(--accent);border-color:var(--accent);color:#05101f}
+.chart{height:420px;padding:18px}.meta{margin-top:18px;padding:14px 18px}code{color:#bfdbfe}@media(max-width:800px){.grid{grid-template-columns:1fr}.chart{height:320px}}
+</style>
 </head>
 <body>
   <main>
-    <section class="hero">
-      <div class="hero-row">
-        <div>
-          <span class="brand "><span class="brand-dot"></span> MarketPulse Live</span>
-          <h1>MarketPulse HTML Market Display</h1>
-          <p class="subtitle">Crypto-Marktueberwachung mit OK/NotOK-Logik. Kurse via CoinGecko, automatisch via cron, mit CSV-Verlauf, Logging und E-Mail-Alerts.</p>
-        </div>
-      </div>
-      <div class="hero-stats">
-        <div class="hero-stat">
-          <div class="hero-stat-label">Status</div>
-          <div class="hero-stat-value ok">OK</div>
-        </div>
-        <div class="hero-stat">
-          <div class="hero-stat-label">Assets</div>
-          <div class="hero-stat-value">3</div>
-        </div>
-        <div class="hero-stat">
-          <div class="hero-stat-label">NotOK</div>
-          <div class="hero-stat-value ok">0</div>
-        </div>
-        <div class="hero-stat">
-          <div class="hero-stat-label">Updated</div>
-          <div class="hero-stat-value" style="font-size:0.95rem;">2026-04-28T10:07:02+00:00</div>
-        </div>
+    <section class="header">
+      <h1>MarketPulse HTML Market Display</h1>
+      <div class="summary">
+        <span>Status: <strong class="ok-text">OK</strong></span>
+        <span>Assets: <strong>3</strong></span>
+        <span>NotOK: <strong>0</strong></span>
+        <span>Updated: <strong>2026-05-04T08:15:01+00:00</strong></span>
       </div>
     </section>
 
-    <p class="section-title">Marktuebersicht</p>
     <section class="grid">
       
-            <a class="card ok" href="#chart-BTC" data-symbol="BTC" title="Zum BTC-Chart springen">
+            <button class="card ok active" type="button" data-symbol="BTC">
               <div class="card-top">
                 <span class="symbol">BTC</span>
                 <span class="pill">OK</span>
               </div>
               <h2>Bitcoin</h2>
-              <p class="price">76,586.00 <span class="currency">USD</span></p>
-              <p class="change down"><span class="arrow">&darr;</span> -1.59% <span class="muted-label">24h</span></p>
+              <p class="price">79,753.00 <span class="currency">USD</span></p>
+              <p class="change up">+1.66% <span class="muted-label">24h</span></p>
               <p class="reason">Price fetched successfully</p>
-            </a>
+            </button>
             
 
-            <a class="card ok" href="#chart-ETH" data-symbol="ETH" title="Zum ETH-Chart springen">
+            <button class="card ok" type="button" data-symbol="ETH">
               <div class="card-top">
                 <span class="symbol">ETH</span>
                 <span class="pill">OK</span>
               </div>
               <h2>Ethereum</h2>
-              <p class="price">2,283.70 <span class="currency">USD</span></p>
-              <p class="change down"><span class="arrow">&darr;</span> -1.64% <span class="muted-label">24h</span></p>
+              <p class="price">2,362.83 <span class="currency">USD</span></p>
+              <p class="change up">+2.26% <span class="muted-label">24h</span></p>
               <p class="reason">Price fetched successfully</p>
-            </a>
+            </button>
             
 
-            <a class="card ok" href="#chart-SOL" data-symbol="SOL" title="Zum SOL-Chart springen">
+            <button class="card ok" type="button" data-symbol="SOL">
               <div class="card-top">
                 <span class="symbol">SOL</span>
                 <span class="pill">OK</span>
               </div>
               <h2>Solana</h2>
-              <p class="price">83.7000 <span class="currency">USD</span></p>
-              <p class="change down"><span class="arrow">&darr;</span> -1.99% <span class="muted-label">24h</span></p>
+              <p class="price">84.7600 <span class="currency">USD</span></p>
+              <p class="change up">+0.97% <span class="muted-label">24h</span></p>
               <p class="reason">Price fetched successfully</p>
-            </a>
+            </button>
             
     </section>
 
-    <p class="section-title">Kursverlauf</p>
-    <div class="trend-toolbar" role="group" aria-label="Trend Zeitraum waehlen">
-      <button type="button" class="trend-btn active" data-trend="5min">5min</button>
-      <button type="button" class="trend-btn" data-trend="1h">1h</button>
-      <button type="button" class="trend-btn" data-trend="1d">1d</button>
+    <div class="toolbar">
+      <button class="filter active" type="button" data-symbol="BTC">BTC</button>
+<button class="filter" type="button" data-symbol="ETH">ETH</button>
+<button class="filter" type="button" data-symbol="SOL">SOL</button>
     </div>
-    
-            <section class="chart-panel" id="chart-BTC">
-              <header class="chart-header">
-                <div class="chart-ident">
-                  <span class="chart-dot" style="background: #f7931a; box-shadow: 0 0 18px rgba(247, 147, 26, 0.35);"></span>
-                  <div>
-                    <p class="toolbar-title">BTC &middot; Bitcoin</p>
-                    <h3 class="chart-bigprice">76,586.00<span class="currency">USD</span></h3>
-                  </div>
-                </div>
-                <span class="chart-change down">-1.59% <span class="muted-label">24h</span></span>
-              </header>
-              <div class="chart-inline-stats">
-                <span><em>Min</em>76,514.00</span>
-                <span class="sep">&middot;</span>
-                <span><em>Avg</em>76,685.59</span>
-                <span class="sep">&middot;</span>
-                <span><em>Max</em>76,884.00</span>
-                <span class="sep">&middot;</span>
-                <span><em>Range</em><b class="down">-0.39%</b></span>
-              </div>
-              <div class="chart-canvas-wrap">
-                <canvas id="canvas-BTC" data-symbol="BTC" aria-label="Bitcoin price history chart"></canvas>
-              </div>
-            </section>
-            
+    <section class="chart">
+      <canvas id="priceChart"></canvas>
+    </section>
 
-            <section class="chart-panel" id="chart-ETH">
-              <header class="chart-header">
-                <div class="chart-ident">
-                  <span class="chart-dot" style="background: #627eea; box-shadow: 0 0 18px rgba(98, 126, 234, 0.35);"></span>
-                  <div>
-                    <p class="toolbar-title">ETH &middot; Ethereum</p>
-                    <h3 class="chart-bigprice">2,283.70<span class="currency">USD</span></h3>
-                  </div>
-                </div>
-                <span class="chart-change down">-1.64% <span class="muted-label">24h</span></span>
-              </header>
-              <div class="chart-inline-stats">
-                <span><em>Min</em>2,278.75</span>
-                <span class="sep">&middot;</span>
-                <span><em>Avg</em>2,284.11</span>
-                <span class="sep">&middot;</span>
-                <span><em>Max</em>2,287.80</span>
-                <span class="sep">&middot;</span>
-                <span><em>Range</em><b class="down">-0.15%</b></span>
-              </div>
-              <div class="chart-canvas-wrap">
-                <canvas id="canvas-ETH" data-symbol="ETH" aria-label="Ethereum price history chart"></canvas>
-              </div>
-            </section>
-            
-
-            <section class="chart-panel" id="chart-SOL">
-              <header class="chart-header">
-                <div class="chart-ident">
-                  <span class="chart-dot" style="background: #14f195; box-shadow: 0 0 18px rgba(20, 241, 149, 0.35);"></span>
-                  <div>
-                    <p class="toolbar-title">SOL &middot; Solana</p>
-                    <h3 class="chart-bigprice">83.7000<span class="currency">USD</span></h3>
-                  </div>
-                </div>
-                <span class="chart-change down">-1.99% <span class="muted-label">24h</span></span>
-              </header>
-              <div class="chart-inline-stats">
-                <span><em>Min</em>83.5100</span>
-                <span class="sep">&middot;</span>
-                <span><em>Avg</em>83.7740</span>
-                <span class="sep">&middot;</span>
-                <span><em>Max</em>83.9900</span>
-                <span class="sep">&middot;</span>
-                <span><em>Range</em><b class="down">-0.35%</b></span>
-              </div>
-              <div class="chart-canvas-wrap">
-                <canvas id="canvas-SOL" data-symbol="SOL" aria-label="Solana price history chart"></canvas>
-              </div>
-            </section>
-            
-
-    <section class="meta-panel">
-      <span>Generated: <code>2026-04-28T10:07:02+00:00</code></span>
-      <span>NotOK assets: <code>0</code></span>
+    <section class="meta">
       <span>History: <code>data/market_history.csv</code></span>
       <span>Log: <code>logs/marketpulse.log</code></span>
     </section>
   </main>
 
   <script>
-    const charts = [{"id": "bitcoin", "symbol": "BTC", "name": "Bitcoin", "color": "#f7931a", "glow": "rgba(247, 147, 26, 0.35)", "labels": ["2026-04-28T07:58:44+00:00", "2026-04-28T09:06:09+00:00", "2026-04-28T09:06:46+00:00", "2026-04-28T09:10:01+00:00", "2026-04-28T09:15:01+00:00", "2026-04-28T09:16:58+00:00", "2026-04-28T09:17:39+00:00", "2026-04-28T09:20:01+00:00", "2026-04-28T09:20:55+00:00", "2026-04-28T09:21:01+00:00", "2026-04-28T09:22:01+00:00", "2026-04-28T09:23:01+00:00", "2026-04-28T09:23:50+00:00", "2026-04-28T09:24:01+00:00", "2026-04-28T09:25:01+00:00", "2026-04-28T09:26:01+00:00", "2026-04-28T09:27:01+00:00", "2026-04-28T09:28:01+00:00", "2026-04-28T09:29:01+00:00", "2026-04-28T09:30:01+00:00", "2026-04-28T09:31:01+00:00", "2026-04-28T09:32:01+00:00", "2026-04-28T09:33:01+00:00", "2026-04-28T09:34:01+00:00", "2026-04-28T09:35:01+00:00", "2026-04-28T09:36:02+00:00", "2026-04-28T09:36:56+00:00", "2026-04-28T09:37:01+00:00", "2026-04-28T09:38:02+00:00", "2026-04-28T09:39:01+00:00", "2026-04-28T09:40:01+00:00", "2026-04-28T09:41:01+00:00", "2026-04-28T09:42:01+00:00", "2026-04-28T09:43:01+00:00", "2026-04-28T09:44:02+00:00", "2026-04-28T09:45:01+00:00", "2026-04-28T09:46:02+00:00", "2026-04-28T09:47:01+00:00", "2026-04-28T09:48:02+00:00", "2026-04-28T09:49:01+00:00", "2026-04-28T09:50:01+00:00", "2026-04-28T09:51:01+00:00", "2026-04-28T09:52:01+00:00", "2026-04-28T09:53:01+00:00", "2026-04-28T09:54:01+00:00", "2026-04-28T09:55:01+00:00", "2026-04-28T09:56:01+00:00", "2026-04-28T09:57:02+00:00", "2026-04-28T09:58:01+00:00", "2026-04-28T09:59:01+00:00", "2026-04-28T10:00:01+00:00", "2026-04-28T10:01:01+00:00", "2026-04-28T10:02:02+00:00", "2026-04-28T10:03:01+00:00", "2026-04-28T10:04:02+00:00", "2026-04-28T10:05:01+00:00", "2026-04-28T10:05:46+00:00", "2026-04-28T10:06:02+00:00", "2026-04-28T10:07:01+00:00"], "prices": [76884.0, 76794.0, 76794.0, 76820.0, 76822.0, 76794.0, 76794.0, 76807.0, 76807.0, 76815.0, 76815.0, 76787.0, 76787.0, 76787.0, 76784.0, 76784.0, null, 76736.0, 76736.0, 76747.0, 76755.0, 76755.0, 76735.0, 76735.0, 76693.0, 76675.0, 76675.0, 76675.0, 76645.0, 76645.0, 76673.0, 76673.0, 76660.0, 76660.0, 76672.0, 76672.0, 76656.0, 76656.0, 76607.0, 76607.0, 76561.0, 76561.0, 76545.0, 76545.0, 76514.0, 76514.0, 76588.0, 76610.0, 76610.0, 76590.0, 76590.0, 76582.0, 76599.0, 76599.0, 76646.0, 76646.0, 76630.0, 76630.0, 76586.0], "stats": {"min": 76514.0, "max": 76884.0, "avg": 76685.58620689655, "first": 76884.0, "last": 76586.0, "range_change_percent": -0.3875968992248062}}, {"id": "ethereum", "symbol": "ETH", "name": "Ethereum", "color": "#627eea", "glow": "rgba(98, 126, 234, 0.35)", "labels": ["2026-04-28T07:58:44+00:00", "2026-04-28T09:06:09+00:00", "2026-04-28T09:06:46+00:00", "2026-04-28T09:10:01+00:00", "2026-04-28T09:15:01+00:00", "2026-04-28T09:16:58+00:00", "2026-04-28T09:17:39+00:00", "2026-04-28T09:20:01+00:00", "2026-04-28T09:20:55+00:00", "2026-04-28T09:21:01+00:00", "2026-04-28T09:22:01+00:00", "2026-04-28T09:23:01+00:00", "2026-04-28T09:23:50+00:00", "2026-04-28T09:24:01+00:00", "2026-04-28T09:25:01+00:00", "2026-04-28T09:26:01+00:00", "2026-04-28T09:27:01+00:00", "2026-04-28T09:28:01+00:00", "2026-04-28T09:29:01+00:00", "2026-04-28T09:30:01+00:00", "2026-04-28T09:31:01+00:00", "2026-04-28T09:32:01+00:00", "2026-04-28T09:33:01+00:00", "2026-04-28T09:34:01+00:00", "2026-04-28T09:35:01+00:00", "2026-04-28T09:36:02+00:00", "2026-04-28T09:36:56+00:00", "2026-04-28T09:37:01+00:00", "2026-04-28T09:38:02+00:00", "2026-04-28T09:39:01+00:00", "2026-04-28T09:40:01+00:00", "2026-04-28T09:41:01+00:00", "2026-04-28T09:42:01+00:00", "2026-04-28T09:43:01+00:00", "2026-04-28T09:44:02+00:00", "2026-04-28T09:45:01+00:00", "2026-04-28T09:46:02+00:00", "2026-04-28T09:47:01+00:00", "2026-04-28T09:48:02+00:00", "2026-04-28T09:49:01+00:00", "2026-04-28T09:50:01+00:00", "2026-04-28T09:51:01+00:00", "2026-04-28T09:52:01+00:00", "2026-04-28T09:53:01+00:00", "2026-04-28T09:54:01+00:00", "2026-04-28T09:55:01+00:00", "2026-04-28T09:56:01+00:00", "2026-04-28T09:57:02+00:00", "2026-04-28T09:58:01+00:00", "2026-04-28T09:59:01+00:00", "2026-04-28T10:00:01+00:00", "2026-04-28T10:01:01+00:00", "2026-04-28T10:02:02+00:00", "2026-04-28T10:03:01+00:00", "2026-04-28T10:04:02+00:00", "2026-04-28T10:05:01+00:00", "2026-04-28T10:05:46+00:00", "2026-04-28T10:06:02+00:00", "2026-04-28T10:07:01+00:00"], "prices": [2287.04, 2285.24, 2285.24, 2285.12, 2286.46, 2285.76, 2285.76, 2287.12, 2287.12, 2287.8, 2287.8, 2286.92, 2286.92, 2286.92, 2286.76, 2286.76, null, 2286.44, 2286.44, 2286.87, 2287.25, 2287.25, 2286.69, 2286.69, 2284.78, 2284.1, 2284.1, 2284.1, 2283.32, 2283.32, 2284.01, 2284.01, 2283.23, 2283.23, 2283.09, 2283.09, 2282.71, 2282.71, 2281.58, 2281.58, 2279.97, 2279.97, 2278.75, 2278.75, 2278.76, 2278.76, 2281.16, 2282.17, 2282.17, 2281.78, 2281.78, 2281.54, 2282.71, 2282.71, 2284.68, 2284.68, 2284.39, 2284.39, 2283.7], "stats": {"min": 2278.75, "max": 2287.8, "avg": 2284.1060344827583, "first": 2287.04, "last": 2283.7, "range_change_percent": -0.14604029662796217}}, {"id": "solana", "symbol": "SOL", "name": "Solana", "color": "#14f195", "glow": "rgba(20, 241, 149, 0.35)", "labels": ["2026-04-28T07:58:44+00:00", "2026-04-28T09:06:09+00:00", "2026-04-28T09:06:46+00:00", "2026-04-28T09:10:01+00:00", "2026-04-28T09:15:01+00:00", "2026-04-28T09:16:58+00:00", "2026-04-28T09:17:39+00:00", "2026-04-28T09:20:01+00:00", "2026-04-28T09:20:55+00:00", "2026-04-28T09:21:01+00:00", "2026-04-28T09:22:01+00:00", "2026-04-28T09:23:01+00:00", "2026-04-28T09:23:50+00:00", "2026-04-28T09:24:01+00:00", "2026-04-28T09:25:01+00:00", "2026-04-28T09:26:01+00:00", "2026-04-28T09:27:01+00:00", "2026-04-28T09:28:01+00:00", "2026-04-28T09:29:01+00:00", "2026-04-28T09:30:01+00:00", "2026-04-28T09:31:01+00:00", "2026-04-28T09:32:01+00:00", "2026-04-28T09:33:01+00:00", "2026-04-28T09:34:01+00:00", "2026-04-28T09:35:01+00:00", "2026-04-28T09:36:02+00:00", "2026-04-28T09:36:56+00:00", "2026-04-28T09:37:01+00:00", "2026-04-28T09:38:02+00:00", "2026-04-28T09:39:01+00:00", "2026-04-28T09:40:01+00:00", "2026-04-28T09:41:01+00:00", "2026-04-28T09:42:01+00:00", "2026-04-28T09:43:01+00:00", "2026-04-28T09:44:02+00:00", "2026-04-28T09:45:01+00:00", "2026-04-28T09:46:02+00:00", "2026-04-28T09:47:01+00:00", "2026-04-28T09:48:02+00:00", "2026-04-28T09:49:01+00:00", "2026-04-28T09:50:01+00:00", "2026-04-28T09:51:01+00:00", "2026-04-28T09:52:01+00:00", "2026-04-28T09:53:01+00:00", "2026-04-28T09:54:01+00:00", "2026-04-28T09:55:01+00:00", "2026-04-28T09:56:01+00:00", "2026-04-28T09:57:02+00:00", "2026-04-28T09:58:01+00:00", "2026-04-28T09:59:01+00:00", "2026-04-28T10:00:01+00:00", "2026-04-28T10:01:01+00:00", "2026-04-28T10:02:02+00:00", "2026-04-28T10:03:01+00:00", "2026-04-28T10:04:02+00:00", "2026-04-28T10:05:01+00:00", "2026-04-28T10:05:46+00:00", "2026-04-28T10:06:02+00:00", "2026-04-28T10:07:01+00:00"], "prices": [83.99, 83.87, 83.87, 83.89, 83.91, 83.88, 83.88, 83.92, 83.92, 83.93, 83.93, 83.93, 83.93, 83.93, 83.87, 83.87, null, 83.85, 83.85, 83.85, 83.88, 83.88, 83.85, 83.85, 83.82, 83.78, 83.78, 83.78, 83.76, 83.76, 83.79, 83.79, 83.78, 83.78, 83.73, 83.73, 83.73, 83.73, 83.7, 83.7, 83.67, 83.67, 83.66, 83.66, 83.51, 83.51, 83.6, 83.66, 83.66, 83.6, 83.6, 83.6, 83.64, 83.64, 83.7, 83.7, 83.72, 83.72, 83.7], "stats": {"min": 83.51, "max": 83.99, "avg": 83.77396551724138, "first": 83.99, "last": 83.7, "range_change_percent": -0.3452791999047411}}];
-    const chartInstances = {};
-    const trendConfig = {
-      '5min': { windowMs: 5 * 60 * 1000 },
-      '1h': { windowMs: 60 * 60 * 1000 },
-      '1d': { windowMs: 24 * 60 * 60 * 1000 },
-    };
-    let activeTrend = '5min';
+const charts = [{"id": "bitcoin", "symbol": "BTC", "name": "Bitcoin", "color": "#f7931a", "points": [{"x": "2026-04-28T14:17:01+00:00", "y": 76066.0}, {"x": "2026-04-28T14:18:01+00:00", "y": 76021.0}, {"x": "2026-04-28T14:19:01+00:00", "y": 76021.0}, {"x": "2026-04-28T14:20:01+00:00", "y": 76036.0}, {"x": "2026-04-28T14:21:01+00:00", "y": 76036.0}, {"x": "2026-04-28T14:22:01+00:00", "y": 76000.0}, {"x": "2026-04-28T14:23:02+00:00", "y": 75964.0}, {"x": "2026-04-28T14:24:01+00:00", "y": 75964.0}, {"x": "2026-04-28T14:25:01+00:00", "y": 75892.0}, {"x": "2026-04-28T14:26:02+00:00", "y": 75887.0}, {"x": "2026-04-28T14:27:01+00:00", "y": 75887.0}, {"x": "2026-04-28T14:28:01+00:00", "y": 75827.0}, {"x": "2026-04-28T14:29:01+00:00", "y": 75827.0}, {"x": "2026-04-28T14:30:01+00:00", "y": 75859.0}, {"x": "2026-04-28T14:31:02+00:00", "y": 75827.0}, {"x": "2026-04-28T14:32:01+00:00", "y": 75827.0}, {"x": "2026-04-28T14:33:02+00:00", "y": 75878.0}, {"x": "2026-04-28T14:34:01+00:00", "y": 75878.0}, {"x": "2026-04-28T14:35:01+00:00", "y": 75814.0}, {"x": "2026-04-28T14:36:01+00:00", "y": 75814.0}, {"x": "2026-04-28T14:37:01+00:00", "y": 75774.0}, {"x": "2026-04-28T14:38:01+00:00", "y": 75774.0}, {"x": "2026-04-28T14:39:01+00:00", "y": 75727.0}, {"x": "2026-04-28T14:40:01+00:00", "y": 75727.0}, {"x": "2026-04-28T14:41:01+00:00", "y": 75705.0}, {"x": "2026-04-28T14:42:01+00:00", "y": 75705.0}, {"x": "2026-04-28T14:43:01+00:00", "y": 75718.0}, {"x": "2026-04-28T14:44:01+00:00", "y": 75718.0}, {"x": "2026-04-28T14:45:01+00:00", "y": 75793.0}, {"x": "2026-04-28T14:46:02+00:00", "y": 75826.0}, {"x": "2026-05-03T21:05:04+00:00", "y": 78866.0}, {"x": "2026-05-03T21:06:02+00:00", "y": 78866.0}, {"x": "2026-05-03T21:07:01+00:00", "y": 78898.0}, {"x": "2026-05-03T21:08:05+00:00", "y": 78927.0}, {"x": "2026-05-03T21:09:05+00:00", "y": 78927.0}, {"x": "2026-05-03T21:10:03+00:00", "y": 78960.0}, {"x": "2026-05-03T21:11:02+00:00", "y": 78960.0}, {"x": "2026-05-03T21:12:01+00:00", "y": 79019.0}, {"x": "2026-05-03T21:13:01+00:00", "y": 79023.0}, {"x": "2026-05-03T21:14:01+00:00", "y": 79023.0}, {"x": "2026-05-03T21:15:01+00:00", "y": 79005.0}, {"x": "2026-05-03T21:16:01+00:00", "y": 79005.0}, {"x": "2026-05-03T21:17:01+00:00", "y": 78997.0}, {"x": "2026-05-03T21:18:01+00:00", "y": 78980.0}, {"x": "2026-05-03T21:19:02+00:00", "y": 78969.0}, {"x": "2026-05-03T21:20:01+00:00", "y": 78969.0}, {"x": "2026-05-03T21:21:01+00:00", "y": 78966.0}, {"x": "2026-05-03T21:22:01+00:00", "y": 78966.0}, {"x": "2026-05-03T21:23:01+00:00", "y": 78959.0}, {"x": "2026-05-03T21:24:01+00:00", "y": 78958.0}, {"x": "2026-05-03T21:25:01+00:00", "y": 78956.0}, {"x": "2026-05-03T21:26:01+00:00", "y": 78956.0}, {"x": "2026-05-03T21:27:01+00:00", "y": 78917.0}, {"x": "2026-05-03T21:28:02+00:00", "y": 78910.0}, {"x": "2026-05-03T21:29:01+00:00", "y": 78910.0}, {"x": "2026-05-03T21:30:01+00:00", "y": 78910.0}, {"x": "2026-05-03T21:31:02+00:00", "y": 78907.0}, {"x": "2026-05-03T21:32:01+00:00", "y": 78907.0}, {"x": "2026-05-03T21:33:01+00:00", "y": 78905.0}, {"x": "2026-05-03T21:34:01+00:00", "y": 78908.0}, {"x": "2026-05-03T21:35:01+00:00", "y": 78908.0}, {"x": "2026-05-03T21:36:01+00:00", "y": 78897.0}, {"x": "2026-05-03T21:37:01+00:00", "y": 78895.0}, {"x": "2026-05-03T21:38:01+00:00", "y": 78895.0}, {"x": "2026-05-03T21:39:01+00:00", "y": 78864.0}, {"x": "2026-05-03T21:40:01+00:00", "y": 78857.0}, {"x": "2026-05-03T21:41:01+00:00", "y": 78857.0}, {"x": "2026-05-03T21:42:01+00:00", "y": 78858.0}, {"x": "2026-05-03T21:43:01+00:00", "y": 78804.0}, {"x": "2026-05-03T21:44:01+00:00", "y": 78804.0}, {"x": "2026-05-03T21:45:01+00:00", "y": 78723.0}, {"x": "2026-05-03T21:46:01+00:00", "y": 78703.0}, {"x": "2026-05-03T21:47:01+00:00", "y": 78711.0}, {"x": "2026-05-03T21:48:01+00:00", "y": 78711.0}, {"x": "2026-05-03T21:49:01+00:00", "y": 78709.0}, {"x": "2026-05-03T21:50:01+00:00", "y": 78698.0}, {"x": "2026-05-03T21:51:01+00:00", "y": 78698.0}, {"x": "2026-05-03T21:52:01+00:00", "y": 78677.0}, {"x": "2026-05-03T21:53:01+00:00", "y": 78672.0}, {"x": "2026-05-03T21:54:01+00:00", "y": 78672.0}, {"x": "2026-05-03T21:55:01+00:00", "y": 78720.0}, {"x": "2026-05-03T21:56:01+00:00", "y": 78745.0}, {"x": "2026-05-03T21:57:01+00:00", "y": 78745.0}, {"x": "2026-05-03T21:58:01+00:00", "y": 78759.0}, {"x": "2026-05-03T21:59:01+00:00", "y": 78773.0}, {"x": "2026-05-03T22:00:02+00:00", "y": 78785.0}, {"x": "2026-05-03T22:01:01+00:00", "y": 78785.0}, {"x": "2026-05-03T22:02:01+00:00", "y": 78903.0}, {"x": "2026-05-03T22:03:01+00:00", "y": 78953.0}, {"x": "2026-05-03T22:04:01+00:00", "y": 78953.0}, {"x": "2026-05-03T22:05:01+00:00", "y": 79025.0}, {"x": "2026-05-03T22:06:01+00:00", "y": 79058.0}, {"x": "2026-05-03T22:07:01+00:00", "y": 79058.0}, {"x": "2026-05-04T03:45:40+00:00", "y": 79716.0}, {"x": "2026-05-04T07:41:01+00:00", "y": 79716.0}, {"x": "2026-05-04T07:42:00+00:00", "y": 79725.0}, {"x": "2026-05-04T07:43:00+00:00", "y": 79725.0}, {"x": "2026-05-04T07:44:00+00:00", "y": 79727.0}, {"x": "2026-05-04T07:45:00+00:00", "y": 79727.0}, {"x": "2026-05-04T07:46:01+00:00", "y": 79813.0}, {"x": "2026-05-04T07:47:00+00:00", "y": 79813.0}, {"x": "2026-05-04T07:48:00+00:00", "y": 79818.0}, {"x": "2026-05-04T07:49:01+00:00", "y": 79859.0}, {"x": "2026-05-04T07:50:00+00:00", "y": 79859.0}, {"x": "2026-05-04T07:51:00+00:00", "y": 79837.0}, {"x": "2026-05-04T07:52:00+00:00", "y": 79784.0}, {"x": "2026-05-04T07:53:01+00:00", "y": 79769.0}, {"x": "2026-05-04T07:54:01+00:00", "y": 79769.0}, {"x": "2026-05-04T07:55:01+00:00", "y": 79736.0}, {"x": "2026-05-04T07:56:01+00:00", "y": 79736.0}, {"x": "2026-05-04T07:57:02+00:00", "y": 79726.0}, {"x": "2026-05-04T07:58:01+00:00", "y": 79726.0}, {"x": "2026-05-04T07:59:01+00:00", "y": 79708.0}, {"x": "2026-05-04T08:00:01+00:00", "y": 79689.0}, {"x": "2026-05-04T08:01:01+00:00", "y": 79689.0}, {"x": "2026-05-04T08:02:01+00:00", "y": 79677.0}, {"x": "2026-05-04T08:03:01+00:00", "y": 79707.0}, {"x": "2026-05-04T08:04:01+00:00", "y": 79707.0}, {"x": "2026-05-04T08:05:01+00:00", "y": 79672.0}, {"x": "2026-05-04T08:06:01+00:00", "y": 79615.0}, {"x": "2026-05-04T08:07:02+00:00", "y": 79616.0}, {"x": "2026-05-04T08:08:01+00:00", "y": 79616.0}, {"x": "2026-05-04T08:09:01+00:00", "y": 79610.0}, {"x": "2026-05-04T08:10:02+00:00", "y": 79642.0}, {"x": "2026-05-04T08:11:01+00:00", "y": 79642.0}, {"x": "2026-05-04T08:12:01+00:00", "y": 79710.0}, {"x": "2026-05-04T08:13:01+00:00", "y": 79701.0}, {"x": "2026-05-04T08:14:01+00:00", "y": 79701.0}, {"x": "2026-05-04T08:15:01+00:00", "y": 79753.0}]}, {"id": "ethereum", "symbol": "ETH", "name": "Ethereum", "color": "#627eea", "points": [{"x": "2026-04-28T14:17:01+00:00", "y": 2272.36}, {"x": "2026-04-28T14:18:01+00:00", "y": 2271.24}, {"x": "2026-04-28T14:19:01+00:00", "y": 2271.24}, {"x": "2026-04-28T14:20:01+00:00", "y": 2271.31}, {"x": "2026-04-28T14:21:01+00:00", "y": 2271.31}, {"x": "2026-04-28T14:22:01+00:00", "y": 2270.53}, {"x": "2026-04-28T14:23:02+00:00", "y": 2269.68}, {"x": "2026-04-28T14:24:01+00:00", "y": 2269.68}, {"x": "2026-04-28T14:25:01+00:00", "y": 2268.2}, {"x": "2026-04-28T14:26:02+00:00", "y": 2267.79}, {"x": "2026-04-28T14:27:01+00:00", "y": 2267.79}, {"x": "2026-04-28T14:28:01+00:00", "y": 2266.03}, {"x": "2026-04-28T14:29:01+00:00", "y": 2266.03}, {"x": "2026-04-28T14:30:01+00:00", "y": 2267.71}, {"x": "2026-04-28T14:31:02+00:00", "y": 2267.22}, {"x": "2026-04-28T14:32:01+00:00", "y": 2267.22}, {"x": "2026-04-28T14:33:02+00:00", "y": 2268.59}, {"x": "2026-04-28T14:34:01+00:00", "y": 2268.59}, {"x": "2026-04-28T14:35:01+00:00", "y": 2267.3}, {"x": "2026-04-28T14:36:01+00:00", "y": 2267.3}, {"x": "2026-04-28T14:37:01+00:00", "y": 2264.68}, {"x": "2026-04-28T14:38:01+00:00", "y": 2264.68}, {"x": "2026-04-28T14:39:01+00:00", "y": 2263.87}, {"x": "2026-04-28T14:40:01+00:00", "y": 2263.87}, {"x": "2026-04-28T14:41:01+00:00", "y": 2264.29}, {"x": "2026-04-28T14:42:01+00:00", "y": 2264.29}, {"x": "2026-04-28T14:43:01+00:00", "y": 2264.84}, {"x": "2026-04-28T14:44:01+00:00", "y": 2264.84}, {"x": "2026-04-28T14:45:01+00:00", "y": 2269.13}, {"x": "2026-04-28T14:46:02+00:00", "y": 2270.14}, {"x": "2026-05-03T21:05:04+00:00", "y": 2326.7}, {"x": "2026-05-03T21:06:02+00:00", "y": 2326.7}, {"x": "2026-05-03T21:07:01+00:00", "y": 2328.54}, {"x": "2026-05-03T21:08:05+00:00", "y": 2329.08}, {"x": "2026-05-03T21:09:05+00:00", "y": 2329.08}, {"x": "2026-05-03T21:10:03+00:00", "y": 2329.55}, {"x": "2026-05-03T21:11:02+00:00", "y": 2329.55}, {"x": "2026-05-03T21:12:01+00:00", "y": 2332.63}, {"x": "2026-05-03T21:13:01+00:00", "y": 2332.19}, {"x": "2026-05-03T21:14:01+00:00", "y": 2332.19}, {"x": "2026-05-03T21:15:01+00:00", "y": 2331.88}, {"x": "2026-05-03T21:16:01+00:00", "y": 2331.88}, {"x": "2026-05-03T21:17:01+00:00", "y": 2332.56}, {"x": "2026-05-03T21:18:01+00:00", "y": 2331.85}, {"x": "2026-05-03T21:19:02+00:00", "y": 2331.31}, {"x": "2026-05-03T21:20:01+00:00", "y": 2331.31}, {"x": "2026-05-03T21:21:01+00:00", "y": 2331.31}, {"x": "2026-05-03T21:22:01+00:00", "y": 2331.31}, {"x": "2026-05-03T21:23:01+00:00", "y": 2332.16}, {"x": "2026-05-03T21:24:01+00:00", "y": 2332.39}, {"x": "2026-05-03T21:25:01+00:00", "y": 2332.22}, {"x": "2026-05-03T21:26:01+00:00", "y": 2332.22}, {"x": "2026-05-03T21:27:01+00:00", "y": 2330.64}, {"x": "2026-05-03T21:28:02+00:00", "y": 2330.12}, {"x": "2026-05-03T21:29:01+00:00", "y": 2330.12}, {"x": "2026-05-03T21:30:01+00:00", "y": 2330.22}, {"x": "2026-05-03T21:31:02+00:00", "y": 2329.88}, {"x": "2026-05-03T21:32:01+00:00", "y": 2329.88}, {"x": "2026-05-03T21:33:01+00:00", "y": 2330.83}, {"x": "2026-05-03T21:34:01+00:00", "y": 2331.68}, {"x": "2026-05-03T21:35:01+00:00", "y": 2331.68}, {"x": "2026-05-03T21:36:01+00:00", "y": 2331.46}, {"x": "2026-05-03T21:37:01+00:00", "y": 2331.11}, {"x": "2026-05-03T21:38:01+00:00", "y": 2331.11}, {"x": "2026-05-03T21:39:01+00:00", "y": 2330.15}, {"x": "2026-05-03T21:40:01+00:00", "y": 2329.39}, {"x": "2026-05-03T21:41:01+00:00", "y": 2329.39}, {"x": "2026-05-03T21:42:01+00:00", "y": 2328.65}, {"x": "2026-05-03T21:43:01+00:00", "y": 2327.41}, {"x": "2026-05-03T21:44:01+00:00", "y": 2327.41}, {"x": "2026-05-03T21:45:01+00:00", "y": 2324.55}, {"x": "2026-05-03T21:46:01+00:00", "y": 2320.69}, {"x": "2026-05-03T21:47:01+00:00", "y": 2319.19}, {"x": "2026-05-03T21:48:01+00:00", "y": 2319.19}, {"x": "2026-05-03T21:49:01+00:00", "y": 2319.86}, {"x": "2026-05-03T21:50:01+00:00", "y": 2320.3}, {"x": "2026-05-03T21:51:01+00:00", "y": 2320.3}, {"x": "2026-05-03T21:52:01+00:00", "y": 2319.3}, {"x": "2026-05-03T21:53:01+00:00", "y": 2319.46}, {"x": "2026-05-03T21:54:01+00:00", "y": 2319.46}, {"x": "2026-05-03T21:55:01+00:00", "y": 2321.14}, {"x": "2026-05-03T21:56:01+00:00", "y": 2321.71}, {"x": "2026-05-03T21:57:01+00:00", "y": 2321.71}, {"x": "2026-05-03T21:58:01+00:00", "y": 2321.57}, {"x": "2026-05-03T21:59:01+00:00", "y": 2322.37}, {"x": "2026-05-03T22:00:02+00:00", "y": 2322.71}, {"x": "2026-05-03T22:01:01+00:00", "y": 2322.71}, {"x": "2026-05-03T22:02:01+00:00", "y": 2328.12}, {"x": "2026-05-03T22:03:01+00:00", "y": 2330.06}, {"x": "2026-05-03T22:04:01+00:00", "y": 2330.06}, {"x": "2026-05-03T22:05:01+00:00", "y": 2336.15}, {"x": "2026-05-03T22:06:01+00:00", "y": 2337.2}, {"x": "2026-05-03T22:07:01+00:00", "y": 2337.2}, {"x": "2026-05-04T03:45:40+00:00", "y": 2364.25}, {"x": "2026-05-04T07:41:01+00:00", "y": 2364.25}, {"x": "2026-05-04T07:42:00+00:00", "y": 2364.02}, {"x": "2026-05-04T07:43:00+00:00", "y": 2364.02}, {"x": "2026-05-04T07:44:00+00:00", "y": 2363.78}, {"x": "2026-05-04T07:45:00+00:00", "y": 2363.78}, {"x": "2026-05-04T07:46:01+00:00", "y": 2366.55}, {"x": "2026-05-04T07:47:00+00:00", "y": 2366.55}, {"x": "2026-05-04T07:48:00+00:00", "y": 2367.46}, {"x": "2026-05-04T07:49:01+00:00", "y": 2368.4}, {"x": "2026-05-04T07:50:00+00:00", "y": 2368.4}, {"x": "2026-05-04T07:51:00+00:00", "y": 2367.73}, {"x": "2026-05-04T07:52:00+00:00", "y": 2365.73}, {"x": "2026-05-04T07:53:01+00:00", "y": 2365.06}, {"x": "2026-05-04T07:54:01+00:00", "y": 2365.06}, {"x": "2026-05-04T07:55:01+00:00", "y": 2363.82}, {"x": "2026-05-04T07:56:01+00:00", "y": 2363.65}, {"x": "2026-05-04T07:57:02+00:00", "y": 2363.29}, {"x": "2026-05-04T07:58:01+00:00", "y": 2363.29}, {"x": "2026-05-04T07:59:01+00:00", "y": 2363.2}, {"x": "2026-05-04T08:00:01+00:00", "y": 2362.73}, {"x": "2026-05-04T08:01:01+00:00", "y": 2362.73}, {"x": "2026-05-04T08:02:01+00:00", "y": 2361.83}, {"x": "2026-05-04T08:03:01+00:00", "y": 2363.05}, {"x": "2026-05-04T08:04:01+00:00", "y": 2363.05}, {"x": "2026-05-04T08:05:01+00:00", "y": 2361.89}, {"x": "2026-05-04T08:06:01+00:00", "y": 2358.94}, {"x": "2026-05-04T08:07:02+00:00", "y": 2358.83}, {"x": "2026-05-04T08:08:01+00:00", "y": 2358.83}, {"x": "2026-05-04T08:09:01+00:00", "y": 2358.34}, {"x": "2026-05-04T08:10:02+00:00", "y": 2359.17}, {"x": "2026-05-04T08:11:01+00:00", "y": 2359.17}, {"x": "2026-05-04T08:12:01+00:00", "y": 2361.63}, {"x": "2026-05-04T08:13:01+00:00", "y": 2361.53}, {"x": "2026-05-04T08:14:01+00:00", "y": 2361.53}, {"x": "2026-05-04T08:15:01+00:00", "y": 2362.83}]}, {"id": "solana", "symbol": "SOL", "name": "Solana", "color": "#14f195", "points": [{"x": "2026-04-28T14:16:01+00:00", "y": 83.35}, {"x": "2026-04-28T14:17:01+00:00", "y": 83.35}, {"x": "2026-04-28T14:18:01+00:00", "y": 83.35}, {"x": "2026-04-28T14:19:01+00:00", "y": 83.35}, {"x": "2026-04-28T14:20:01+00:00", "y": 83.37}, {"x": "2026-04-28T14:21:01+00:00", "y": 83.37}, {"x": "2026-04-28T14:22:01+00:00", "y": 83.38}, {"x": "2026-04-28T14:23:02+00:00", "y": 83.39}, {"x": "2026-04-28T14:24:01+00:00", "y": 83.39}, {"x": "2026-04-28T14:25:01+00:00", "y": 83.25}, {"x": "2026-04-28T14:26:02+00:00", "y": 83.24}, {"x": "2026-04-28T14:27:01+00:00", "y": 83.24}, {"x": "2026-04-28T14:28:01+00:00", "y": 83.2}, {"x": "2026-04-28T14:29:01+00:00", "y": 83.2}, {"x": "2026-04-28T14:30:01+00:00", "y": 83.18}, {"x": "2026-04-28T14:31:02+00:00", "y": 83.2}, {"x": "2026-04-28T14:32:01+00:00", "y": 83.2}, {"x": "2026-04-28T14:33:02+00:00", "y": 83.21}, {"x": "2026-04-28T14:34:01+00:00", "y": 83.21}, {"x": "2026-04-28T14:35:01+00:00", "y": 83.22}, {"x": "2026-04-28T14:36:01+00:00", "y": 83.22}, {"x": "2026-04-28T14:37:01+00:00", "y": 83.13}, {"x": "2026-04-28T14:38:01+00:00", "y": 83.13}, {"x": "2026-04-28T14:39:01+00:00", "y": 83.05}, {"x": "2026-04-28T14:40:01+00:00", "y": 83.05}, {"x": "2026-04-28T14:41:01+00:00", "y": 83.05}, {"x": "2026-04-28T14:42:01+00:00", "y": 83.05}, {"x": "2026-04-28T14:43:01+00:00", "y": 83.1}, {"x": "2026-04-28T14:44:01+00:00", "y": 83.1}, {"x": "2026-04-28T14:45:01+00:00", "y": 83.12}, {"x": "2026-04-28T14:46:02+00:00", "y": 83.12}, {"x": "2026-05-03T21:05:04+00:00", "y": 84.28}, {"x": "2026-05-03T21:06:02+00:00", "y": 84.28}, {"x": "2026-05-03T21:07:01+00:00", "y": 84.32}, {"x": "2026-05-03T21:08:05+00:00", "y": 84.32}, {"x": "2026-05-03T21:09:05+00:00", "y": 84.32}, {"x": "2026-05-03T21:10:03+00:00", "y": 84.31}, {"x": "2026-05-03T21:11:02+00:00", "y": 84.31}, {"x": "2026-05-03T21:12:01+00:00", "y": 84.33}, {"x": "2026-05-03T21:13:01+00:00", "y": 84.36}, {"x": "2026-05-03T21:14:01+00:00", "y": 84.36}, {"x": "2026-05-03T21:15:01+00:00", "y": 84.4}, {"x": "2026-05-03T21:16:01+00:00", "y": 84.4}, {"x": "2026-05-03T21:17:01+00:00", "y": 84.43}, {"x": "2026-05-03T21:18:01+00:00", "y": 84.44}, {"x": "2026-05-03T21:19:02+00:00", "y": 84.42}, {"x": "2026-05-03T21:20:01+00:00", "y": 84.42}, {"x": "2026-05-03T21:21:01+00:00", "y": 84.39}, {"x": "2026-05-03T21:22:01+00:00", "y": 84.39}, {"x": "2026-05-03T21:23:01+00:00", "y": 84.39}, {"x": "2026-05-03T21:24:01+00:00", "y": 84.38}, {"x": "2026-05-03T21:25:01+00:00", "y": 84.38}, {"x": "2026-05-03T21:26:01+00:00", "y": 84.38}, {"x": "2026-05-03T21:27:01+00:00", "y": 84.35}, {"x": "2026-05-03T21:28:02+00:00", "y": 84.31}, {"x": "2026-05-03T21:29:01+00:00", "y": 84.31}, {"x": "2026-05-03T21:30:01+00:00", "y": 84.31}, {"x": "2026-05-03T21:31:02+00:00", "y": 84.31}, {"x": "2026-05-03T21:32:01+00:00", "y": 84.31}, {"x": "2026-05-03T21:33:01+00:00", "y": 84.34}, {"x": "2026-05-03T21:34:01+00:00", "y": 84.34}, {"x": "2026-05-03T21:35:01+00:00", "y": 84.34}, {"x": "2026-05-03T21:36:01+00:00", "y": 84.35}, {"x": "2026-05-03T21:37:01+00:00", "y": 84.35}, {"x": "2026-05-03T21:38:01+00:00", "y": 84.35}, {"x": "2026-05-03T21:39:01+00:00", "y": 84.34}, {"x": "2026-05-03T21:40:01+00:00", "y": 84.34}, {"x": "2026-05-03T21:41:01+00:00", "y": 84.34}, {"x": "2026-05-03T21:42:01+00:00", "y": 84.32}, {"x": "2026-05-03T21:43:01+00:00", "y": 84.24}, {"x": "2026-05-03T21:44:01+00:00", "y": 84.24}, {"x": "2026-05-03T21:45:01+00:00", "y": 84.1}, {"x": "2026-05-03T21:46:01+00:00", "y": 84.0}, {"x": "2026-05-03T21:47:01+00:00", "y": 84.01}, {"x": "2026-05-03T21:48:01+00:00", "y": 84.01}, {"x": "2026-05-03T21:49:01+00:00", "y": 83.98}, {"x": "2026-05-03T21:50:01+00:00", "y": 83.98}, {"x": "2026-05-03T21:51:01+00:00", "y": 83.98}, {"x": "2026-05-03T21:52:01+00:00", "y": 83.98}, {"x": "2026-05-03T21:53:01+00:00", "y": 83.99}, {"x": "2026-05-03T21:54:01+00:00", "y": 83.99}, {"x": "2026-05-03T21:55:01+00:00", "y": 84.02}, {"x": "2026-05-03T21:56:01+00:00", "y": 84.06}, {"x": "2026-05-03T21:57:01+00:00", "y": 84.06}, {"x": "2026-05-03T21:58:01+00:00", "y": 84.05}, {"x": "2026-05-03T21:59:01+00:00", "y": 84.05}, {"x": "2026-05-03T22:00:02+00:00", "y": 84.07}, {"x": "2026-05-03T22:01:01+00:00", "y": 84.07}, {"x": "2026-05-03T22:02:01+00:00", "y": 84.28}, {"x": "2026-05-03T22:03:01+00:00", "y": 84.3}, {"x": "2026-05-03T22:04:01+00:00", "y": 84.3}, {"x": "2026-05-03T22:05:01+00:00", "y": 84.44}, {"x": "2026-05-03T22:06:01+00:00", "y": 84.44}, {"x": "2026-05-03T22:07:01+00:00", "y": 84.44}, {"x": "2026-05-04T03:45:40+00:00", "y": 84.73}, {"x": "2026-05-04T07:41:01+00:00", "y": 84.73}, {"x": "2026-05-04T07:42:00+00:00", "y": 84.73}, {"x": "2026-05-04T07:43:00+00:00", "y": 84.73}, {"x": "2026-05-04T07:44:00+00:00", "y": 84.72}, {"x": "2026-05-04T07:45:00+00:00", "y": 84.72}, {"x": "2026-05-04T07:46:01+00:00", "y": 84.79}, {"x": "2026-05-04T07:47:00+00:00", "y": 84.79}, {"x": "2026-05-04T07:48:00+00:00", "y": 84.82}, {"x": "2026-05-04T07:49:01+00:00", "y": 84.89}, {"x": "2026-05-04T07:50:00+00:00", "y": 84.89}, {"x": "2026-05-04T07:51:00+00:00", "y": 84.93}, {"x": "2026-05-04T07:52:00+00:00", "y": 84.92}, {"x": "2026-05-04T07:53:01+00:00", "y": 84.92}, {"x": "2026-05-04T07:54:01+00:00", "y": 84.92}, {"x": "2026-05-04T07:55:01+00:00", "y": 84.87}, {"x": "2026-05-04T07:56:01+00:00", "y": 84.87}, {"x": "2026-05-04T07:57:02+00:00", "y": 84.89}, {"x": "2026-05-04T07:58:01+00:00", "y": 84.89}, {"x": "2026-05-04T07:59:01+00:00", "y": 84.89}, {"x": "2026-05-04T08:00:01+00:00", "y": 84.88}, {"x": "2026-05-04T08:01:01+00:00", "y": 84.88}, {"x": "2026-05-04T08:02:01+00:00", "y": 84.82}, {"x": "2026-05-04T08:03:01+00:00", "y": 84.82}, {"x": "2026-05-04T08:04:01+00:00", "y": 84.82}, {"x": "2026-05-04T08:05:01+00:00", "y": 84.81}, {"x": "2026-05-04T08:06:01+00:00", "y": 84.78}, {"x": "2026-05-04T08:07:02+00:00", "y": 84.72}, {"x": "2026-05-04T08:08:01+00:00", "y": 84.72}, {"x": "2026-05-04T08:09:01+00:00", "y": 84.68}, {"x": "2026-05-04T08:10:02+00:00", "y": 84.69}, {"x": "2026-05-04T08:11:01+00:00", "y": 84.69}, {"x": "2026-05-04T08:12:01+00:00", "y": 84.75}, {"x": "2026-05-04T08:13:01+00:00", "y": 84.75}, {"x": "2026-05-04T08:14:01+00:00", "y": 84.75}, {"x": "2026-05-04T08:15:01+00:00", "y": 84.76}]}];
+const firstSymbol = charts.length ? charts[0].symbol : '';
+const chart = new Chart(document.getElementById('priceChart'), {
+  type: 'line',
+  data: { datasets: datasetsFor(firstSymbol) },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'nearest', intersect: false },
+    plugins: { legend: { labels: { color: '#eef4ff' } } },
+    scales: {
+      x: { type: 'category', ticks: { color: '#9caec8' }, grid: { color: '#1b2a40' } },
+      y: { ticks: { color: '#9caec8' }, grid: { color: '#1b2a40' } },
+    },
+  },
+});
 
-    function shortLabel(iso) {
-      const date = new Date(iso);
-      if (Number.isNaN(date.getTime())) return iso;
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const hour = String(date.getHours()).padStart(2, '0');
-      const minute = String(date.getMinutes()).padStart(2, '0');
-      return `${day}.${month} ${hour}:${minute}`;
-    }
+function label(value) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? value
+    : date.toLocaleString('de-CH', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
 
-    function formatPrice(value) {
-      if (value === null || value === undefined || Number.isNaN(value)) return 'n/a';
-      return new Intl.NumberFormat('de-CH', { minimumFractionDigits: value >= 100 ? 2 : 4, maximumFractionDigits: value >= 100 ? 2 : 4 }).format(value);
-    }
+function datasetsFor(symbol) {
+  return charts
+    .filter((item) => item.symbol === symbol)
+    .map((item) => ({
+      label: item.symbol,
+      data: item.points.map((point) => ({ x: label(point.x), y: point.y })),
+      borderColor: item.color,
+      backgroundColor: item.color,
+      borderWidth: 2,
+      pointRadius: 2,
+      tension: 0.15,
+    }));
+}
 
-    function trendSlice(labels, prices, trendKey) {
-      const config = trendConfig[trendKey] || trendConfig['1h'];
-      const entries = labels
-        .map((label, index) => ({
-          rawPrice: prices[index],
-          label,
-          timestamp: Date.parse(label),
-        }))
-        .map((entry) => ({
-          ...entry,
-          price:
-            entry.rawPrice === null || entry.rawPrice === undefined || entry.rawPrice === ''
-              ? Number.NaN
-              : Number(entry.rawPrice),
-        }))
-        .filter((entry) => !Number.isNaN(entry.timestamp) && Number.isFinite(entry.price))
-        .sort((a, b) => a.timestamp - b.timestamp);
+function show(symbol) {
+  document.querySelectorAll('[data-symbol]').forEach((button) => {
+    button.classList.toggle('active', button.dataset.symbol === symbol);
+  });
+  chart.data.datasets = datasetsFor(symbol);
+  chart.update();
+}
 
-      if (!entries.length) {
-        return { labels: labels.slice(), prices: prices.slice() };
-      }
-
-      const latestTimestamp = entries[entries.length - 1].timestamp;
-      const cutoffTimestamp = latestTimestamp - config.windowMs;
-      const filtered = entries.filter((entry) => entry.timestamp >= cutoffTimestamp);
-      const selected = filtered.length ? filtered : [entries[entries.length - 1]];
-
-      return {
-        labels: selected.map((entry) => entry.label),
-        prices: selected.map((entry) => entry.price),
-      };
-    }
-
-    function setActiveTrendButton(trendKey) {
-      document.querySelectorAll('button.trend-btn').forEach((button) => {
-        button.classList.toggle('active', button.dataset.trend === trendKey);
-      });
-    }
-
-    function applyTrend(instance, trendKey) {
-      const sliced = trendSlice(instance.$sourceLabels, instance.$sourcePrices, trendKey);
-      instance.data.labels = sliced.labels.map(shortLabel);
-      instance.data.datasets[0].data = sliced.prices;
-      instance.resetZoom?.();
-      instance.update();
-    }
-
-    function updateAllChartsForTrend(trendKey) {
-      activeTrend = trendKey;
-      setActiveTrendButton(trendKey);
-      Object.values(chartInstances).forEach((instance) => applyTrend(instance, trendKey));
-    }
-
-    charts.forEach((chart) => {
-      const canvas = document.getElementById(`canvas-${chart.symbol}`);
-      if (!canvas) return;
-      const slicedTrend = trendSlice(chart.labels, chart.prices, activeTrend);
-
-      const instance = new Chart(canvas, {
-        type: 'line',
-        data: {
-          labels: slicedTrend.labels.map(shortLabel),
-          datasets: [{
-            label: chart.symbol,
-            data: slicedTrend.prices,
-            borderColor: chart.color,
-            borderWidth: 2.2,
-            tension: 0,
-            spanGaps: true,
-            fill: false,
-            pointRadius: 0,
-            pointHoverRadius: 4,
-            pointHoverBackgroundColor: chart.color,
-            pointHoverBorderColor: '#0b1426',
-            pointHoverBorderWidth: 2,
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          layout: { padding: { right: 16, top: 16, bottom: 4, left: 4 } },
-          interaction: { mode: 'index', intersect: false },
-          animation: { duration: 700, easing: 'easeOutCubic' },
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: 'rgba(11, 20, 38, 0.96)',
-              borderColor: 'rgba(148, 163, 184, 0.18)',
-              borderWidth: 1,
-              titleColor: '#94a3b8',
-              titleFont: { size: 11, weight: '600' },
-               bodyColor: '#f1f5fb',
-               bodyFont: { size: 13, weight: '700' },
-                padding: 12,
-                cornerRadius: 10,
-                displayColors: false,
-                callbacks: {
-                  title: (items) => items[0] ? items[0].label : '',
-                  label: (item) => `${formatPrice(item.raw)}`
-                }
-              },
-              zoom: {
-              limits: { x: { min: 'original', max: 'original' }, y: { min: 'original', max: 'original' } },
-              pan: { enabled: true, mode: 'x', modifierKey: 'shift' },
-              zoom: {
-                wheel: { enabled: true, speed: 0.08 },
-                pinch: { enabled: true },
-                drag: { enabled: true, backgroundColor: chart.glow, borderColor: chart.color, borderWidth: 1 },
-                mode: 'x'
-              }
-            }
-          },
-           scales: {
-             x: {
-               ticks: {
-                 color: 'rgba(148, 163, 184, 0.65)',
-                 font: { size: 10, weight: '600' },
-                 maxTicksLimit: 8,
-               },
-               grid: { display: false },
-               border: { display: false }
-             },
-             y: {
-               position: 'right',
-              ticks: {
-                color: 'rgba(148, 163, 184, 0.6)',
-                font: { size: 10, weight: '600' },
-                maxTicksLimit: 4,
-                padding: 8,
-                callback: (value) => formatPrice(value)
-              },
-              grid: { display: false },
-              border: { display: false }
-            }
-          }
-        }
-      });
-
-      instance.$sourceLabels = chart.labels.slice();
-      instance.$sourcePrices = chart.prices.slice();
-      chartInstances[chart.symbol] = instance;
-
-      canvas.addEventListener('dblclick', () => chartInstances[chart.symbol]?.resetZoom?.());
-    });
-
-    document.querySelectorAll('button.trend-btn').forEach((button) => {
-      button.addEventListener('click', () => {
-        const trendKey = button.dataset.trend;
-        if (!trendConfig[trendKey] || trendKey === activeTrend) return;
-        updateAllChartsForTrend(trendKey);
-      });
-    });
-
-    setActiveTrendButton(activeTrend);
-  </script>
+document.querySelectorAll('[data-symbol]').forEach((button) => {
+  button.addEventListener('click', () => show(button.dataset.symbol));
+});
+</script>
 </body>
 </html>
